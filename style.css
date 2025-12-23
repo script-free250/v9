@@ -1,4 +1,4 @@
-/* style.css - النسخة النهائية الكاملة */
+/* style.css - النسخة النهائية المعدلة (زر اللصق + شعار تليجرام) */
 @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&display=swap');
 
@@ -31,7 +31,7 @@ body {
 
 @keyframes matrixMove { 0% { background-position: 0 0; } 100% { background-position: 50px 50px; } }
 
-/* تأثير اهتزاز الشاشة عند الخطأ */
+/* تأثير اهتزاز الشاشة */
 @keyframes shake {
     0% { transform: translate(1px, 1px) rotate(0deg); }
     10% { transform: translate(-1px, -2px) rotate(-1deg); }
@@ -81,41 +81,56 @@ body::before {
 .live-counter::before { content: "●"; color: red; margin-left: 5px; animation: blink 1s infinite; }
 @keyframes blink { 50% { opacity: 0; } }
 
-/* أيقونة تليجرام العائمة */
+/* أيقونة تليجرام العائمة (SVG Style) */
 .telegram-float {
     position: fixed; bottom: 20px; right: 20px;
-    background: #0088cc; color: white;
-    width: 50px; height: 50px; border-radius: 50%;
+    background: #24A1DE; /* لون تليجرام الرسمي */
+    color: white;
+    width: 55px; height: 55px; border-radius: 50%;
     display: flex; justify-content: center; align-items: center;
-    font-size: 24px; box-shadow: 0 0 15px rgba(0, 136, 204, 0.5);
+    box-shadow: 0 0 15px rgba(36, 161, 222, 0.6);
     text-decoration: none; z-index: 1000; transition: 0.3s;
     border: 2px solid rgba(255,255,255,0.2);
 }
-.telegram-float:hover { transform: scale(1.1); box-shadow: 0 0 25px #0088cc; }
+.telegram-float:hover { transform: scale(1.1) translateY(-5px); box-shadow: 0 0 30px #24A1DE; }
+.telegram-float svg { width: 30px; height: 30px; fill: #fff; }
 
-/* === [تعديل] زر اللصق الصغير === */
-.input-wrapper { position: relative; width: 100%; margin-bottom: 0; }
+/* === تحسين زر اللصق ومكان الإدخال === */
+.input-wrapper { 
+    position: relative; 
+    width: 100%; 
+    margin-bottom: 0;
+    display: flex;
+    align-items: center;
+}
 
 .paste-btn {
     position: absolute;
-    left: 10px;
+    left: 15px;          /* تحريك الزر لليسار قليلاً ليكون داخلاً بوضوح */
     top: 50%;
     transform: translateY(-50%);
-    background: transparent;
-    border: none;
+    background: rgba(0, 255, 0, 0.1); /* خلفية خفيفة جداً */
+    border: 1px solid var(--hacker-green);
     color: var(--hacker-green);
-    font-size: 14px;
-    padding: 5px;
+    font-size: 1rem;
+    padding: 5px 10px;
     cursor: pointer;
-    z-index: 10;
-    opacity: 0.5;
+    z-index: 20;
+    border-radius: 6px;
     transition: all 0.2s ease;
-    border-radius: 4px;
+    height: 35px; /* ارتفاع مناسب */
+    width: 35px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 0 !important; /* إلغاء أي مارجن سابق */
+    box-shadow: none !important;
 }
+
 .paste-btn:hover {
-    opacity: 1;
-    background: rgba(0, 255, 0, 0.1);
-    transform: translateY(-50%) scale(1.1);
+    background: var(--hacker-green);
+    color: #000;
+    box-shadow: 0 0 10px var(--hacker-green) !important;
 }
 
 /* Tooltips */
@@ -198,7 +213,6 @@ button:hover { background: linear-gradient(90deg, #006600, #00b300); transform: 
 .loading-text { font-family: 'Fira Code'; color: var(--hacker-green); font-size: 1.2rem; }
 .hidden { display: none; } input[type="file"] { display: none; }
 
-/* عناصر التحكم في الأدمن */
 .admin-controls { display: flex; gap: 10px; margin-bottom: 15px; }
 .search-input { flex: 2; border-radius: 4px; border: 1px solid #444; }
 .filter-btn { flex: 1; padding: 10px; background: #111; border: 1px solid #444; color: #fff; border-radius: 4px; margin: 0; }
