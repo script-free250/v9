@@ -1,14 +1,14 @@
-/* style.css - Ultra Hacker Theme (Enhanced Background) */
+/* style.css - Ultimate Hacker UX */
 @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&display=swap');
 
 :root {
-    --bg-color: #010101;       /* أسود عميق */
-    --panel-bg: rgba(10, 10, 10, 0.95);
-    --hacker-green: #00ff41;   /* أخضر هاكر */
-    --hacker-dim: rgba(0, 255, 65, 0.08);
-    --text-color: #e0e0e0;
-    --border-glow: 0 0 10px var(--hacker-green);
+    --bg-color: #000;
+    --glass-bg: rgba(10, 20, 10, 0.75); /* خلفية زجاجية شبه شفافة */
+    --hacker-green: #0f0;
+    --hacker-dim: rgba(0, 255, 0, 0.15);
+    --text-color: #fff;
+    --border-color: rgba(0, 255, 0, 0.3);
 }
 
 * { box-sizing: border-box; }
@@ -22,104 +22,90 @@ body {
     min-height: 100vh; direction: rtl;
     overflow-x: hidden;
     position: relative;
-
-    /* الطبقة الأولى: شبكة ثابتة خفيفة + إضاءة مركزية */
-    background-image:
-        linear-gradient(var(--hacker-dim) 1px, transparent 1px),
-        linear-gradient(90deg, var(--hacker-dim) 1px, transparent 1px),
-        radial-gradient(circle at center, rgba(0, 255, 65, 0.15) 0%, transparent 80%);
-    background-size: 40px 40px, 40px 40px, 100% 100%;
-    background-position: center;
+    
+    /* خلفية المطر الرقمي المتحرك */
+    background-image: linear-gradient(0deg, transparent 24%, var(--hacker-dim) 25%, var(--hacker-dim) 26%, transparent 27%, transparent 74%, var(--hacker-dim) 75%, var(--hacker-dim) 76%, transparent 77%, transparent), 
+                      linear-gradient(90deg, transparent 24%, var(--hacker-dim) 25%, var(--hacker-dim) 26%, transparent 27%, transparent 74%, var(--hacker-dim) 75%, var(--hacker-dim) 76%, transparent 77%, transparent);
+    background-size: 50px 50px;
+    animation: matrixMove 3s linear infinite;
 }
 
-/* الطبقة الثانية: تأثير تدفق البيانات (Data Flow) */
-body::before {
-    content: "";
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    pointer-events: none; z-index: -1;
-    background: linear-gradient(180deg, transparent 0%, rgba(0, 255, 65, 0.05) 50%, transparent 100%);
-    background-size: 100% 200%;
-    animation: dataFlow 12s linear infinite;
-    opacity: 0.8;
+/* حركة الخلفية لتعطي إيحاء الهبوط */
+@keyframes matrixMove {
+    0% { background-position: 0 0; }
+    100% { background-position: 50px 50px; }
 }
 
-@keyframes dataFlow {
-    0% { background-position: 0 -200%; }
-    100% { background-position: 0 0; }
-}
-
-/* الطبقة الثالثة: خطوط الشاشة (Scanlines) المحسنة */
+/* تأثير التظليل المحيطي (Vignette) للتركيز على المنتصف */
 body::after {
     content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: repeating-linear-gradient(
-        0deg,
-        rgba(0, 0, 0, 0.15),
-        rgba(0, 0, 0, 0.15) 1px,
-        transparent 1px,
-        transparent 3px
-    );
-    pointer-events: none; z-index: 999;
+    background: radial-gradient(circle, transparent 40%, #000 100%);
+    pointer-events: none; z-index: -1;
 }
 
 .container {
-    background-color: var(--panel-bg);
+    background: var(--glass-bg);
     padding: 2.5rem;
-    border: 1px solid var(--hacker-green);
-    box-shadow: 0 0 25px rgba(0, 255, 65, 0.1);
-    border-radius: 8px;
-    width: 90%;
+    border: 1px solid var(--border-color);
+    border-top: 2px solid var(--hacker-green);
+    border-bottom: 2px solid var(--hacker-green);
+    box-shadow: 0 0 30px rgba(0, 255, 0, 0.1);
+    border-radius: 12px;
+    width: 95%;
     max-width: 480px;
     text-align: center;
     position: relative;
+    /* تأثير الزجاج */
     backdrop-filter: blur(10px);
-    animation: slideUp 0.7s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+    -webkit-backdrop-filter: blur(10px);
+    animation: fadeIn 0.8s ease-out;
 }
 
-.container.wide-mode { max-width: 850px; }
+.container.wide-mode { max-width: 900px; }
 
-@keyframes slideUp {
-    from { transform: translateY(40px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
-}
+@keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
 
 h2 {
     color: var(--hacker-green); margin-bottom: 30px;
     font-weight: 900; text-transform: uppercase;
-    text-shadow: 0 0 10px var(--hacker-green);
-    border-bottom: 2px solid #333; padding-bottom: 15px;
+    text-shadow: 0 0 15px var(--hacker-green);
+    letter-spacing: 1px;
+    position: relative;
+    display: inline-block;
 }
 
 label.title {
-    display: block; text-align: right; margin: 15px 0 8px;
-    color: var(--hacker-green); font-size: 0.95rem; font-weight: bold;
-    text-shadow: 0 0 5px rgba(0, 255, 65, 0.2);
+    display: block; text-align: right; margin: 20px 0 10px;
+    color: var(--hacker-green); font-size: 1rem; font-weight: bold;
+    text-shadow: 0 0 5px rgba(0, 255, 0, 0.3);
 }
 
-/* === خيارات البرامج (مستطيلة + شعار كامل) === */
+/* === خيارات البرامج (تصميم الكروت المضيئة) === */
 .program-grid {
-    display: flex; justify-content: center; gap: 15px; margin-bottom: 25px;
+    display: flex; justify-content: center; gap: 20px; margin-bottom: 25px;
+    flex-wrap: wrap; /* لضمان التجاوب */
 }
 
 .program-option {
-    border: 2px solid #333;
-    background: #000;
-    padding: 5px; /* هامش داخلي صغير لعدم التصاق الشعار */
-    border-radius: 6px;
-    cursor: pointer; transition: 0.3s;
-    width: 160px; height: 85px; /* مستطيل */
+    border: 1px solid #333;
+    background: rgba(0,0,0,0.6);
+    padding: 5px;
+    border-radius: 8px;
+    cursor: pointer; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    width: 160px; height: 85px;
     position: relative; overflow: hidden;
     display: flex; justify-content: center; align-items: center;
 }
 
 .program-option:hover {
+    transform: translateY(-5px);
     border-color: #fff;
-    box-shadow: 0 0 15px rgba(255,255,255,0.3);
-    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.5);
 }
 
 .program-option.selected {
     border-color: var(--hacker-green);
-    box-shadow: 0 0 20px var(--hacker-green), inset 0 0 10px rgba(0,255,65,0.1);
+    box-shadow: 0 0 25px var(--hacker-green), inset 0 0 10px var(--hacker-dim);
 }
 
 .program-option.selected::after {
@@ -127,76 +113,93 @@ label.title {
     background: var(--hacker-green); color: #000;
     width: 25px; height: 25px; border-radius: 50%;
     display: flex; justify-content: center; align-items: center;
-    font-weight: bold; z-index: 10;
+    font-weight: bold; z-index: 10; box-shadow: 0 0 10px #000;
 }
 
 .program-icon {
-    width: 100%; height: 100%;
-    object-fit: contain; /* إظهار الشعار بالكامل بدون قص */
-    filter: grayscale(100%); transition: 0.3s;
+    width: 100%; height: 100%; object-fit: contain;
+    filter: grayscale(100%) brightness(0.7); transition: 0.4s;
 }
 
 .program-option:hover .program-icon, .program-option.selected .program-icon {
-    filter: grayscale(0%); transform: scale(1.05);
+    filter: grayscale(0%) brightness(1.2); transform: scale(1.05);
 }
 
-/* المدخلات */
-textarea, input[type="text"], input[type="email"], input[type="password"] {
-    width: 100%; background: #080808;
-    border: 1px solid #333; border-right: 3px solid var(--hacker-green);
-    padding: 15px; color: #fff; font-family: 'Cairo', sans-serif;
-    outline: none; transition: 0.3s; font-size: 1rem;
+/* المدخلات الحديثة */
+textarea, input {
+    width: 100%; background: rgba(0,0,0,0.4);
+    border: 1px solid #333; border-bottom: 2px solid #555;
+    padding: 15px; color: #fff; font-family: 'Cairo', sans-serif; font-size: 1rem;
+    outline: none; transition: 0.3s; border-radius: 4px;
 }
 
 textarea:focus, input:focus {
-    border-color: var(--hacker-green); background: #111;
-    box-shadow: 0 0 15px var(--hacker-dim);
+    background: rgba(0, 255, 0, 0.05);
+    border-bottom-color: var(--hacker-green);
+    box-shadow: 0 5px 15px -10px var(--hacker-green);
 }
 
 /* رفع الملفات */
 .upload-box {
-    border: 2px dashed #444; background: rgba(0, 255, 65, 0.02);
-    padding: 15px; cursor: pointer; color: #888; margin-bottom: 10px;
+    border: 2px dashed #444; background: rgba(0, 0, 0, 0.3);
+    padding: 20px; cursor: pointer; color: #888; margin-bottom: 10px;
     display: flex; justify-content: space-between; align-items: center;
-    transition: 0.3s;
+    transition: 0.3s; border-radius: 8px;
 }
-.upload-box:hover { border-color: var(--hacker-green); color: var(--hacker-green); box-shadow: inset 0 0 10px var(--hacker-dim); }
-.upload-box.uploaded { border-style: solid; border-color: var(--hacker-green); color: var(--hacker-green); background: rgba(0,255,65,0.1); }
+.upload-box:hover { border-color: var(--hacker-green); color: var(--hacker-green); background: rgba(0, 255, 0, 0.05); }
+.upload-box.uploaded { border-style: solid; border-color: var(--hacker-green); color: #fff; background: rgba(0, 255, 0, 0.1); }
 
-/* الأزرار */
+/* زر الإرسال الرئيسي */
 button {
-    width: 100%; padding: 16px; margin-top: 20px;
-    border: 2px solid var(--hacker-green); background: transparent;
-    color: var(--hacker-green); font-weight: 900; font-size: 1.1rem;
-    cursor: pointer; font-family: 'Cairo', sans-serif; transition: 0.2s;
-    text-transform: uppercase; letter-spacing: 1px;
+    width: 100%; padding: 18px; margin-top: 25px;
+    border: none; background: linear-gradient(90deg, #004d00, #008000); /* تدرج لوني */
+    color: #fff; font-weight: 900; font-size: 1.1rem;
+    cursor: pointer; font-family: 'Cairo', sans-serif; transition: 0.3s;
+    text-transform: uppercase; letter-spacing: 1px; border-radius: 50px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+    position: relative; overflow: hidden;
 }
-button:hover { background: var(--hacker-green); color: #000; box-shadow: 0 0 25px var(--hacker-green); }
 
-.secondary-btn { border-color: #666; color: #888; }
-.secondary-btn:hover { border-color: var(--hacker-green); color: var(--hacker-green); background: transparent; }
+button:hover {
+    background: linear-gradient(90deg, #006600, #00b300);
+    transform: scale(1.02);
+    box-shadow: 0 0 20px var(--hacker-green);
+}
 
-/* شاشة التطبيق */
-.monitor-screen {
-    background: #000; border: 2px solid #333; padding: 20px;
-    margin: 20px 0; border-radius: 5px; box-shadow: inset 0 0 20px #000;
+/* زر ثانوي */
+.secondary-btn { 
+    background: transparent; border: 1px solid #444; color: #888; margin-top: 10px;
 }
-.big-number {
-    font-size: 4rem; color: var(--hacker-green); font-weight: 900;
-    text-shadow: 0 0 20px var(--hacker-green); margin: 15px 0; direction: ltr; font-family: 'Fira Code', monospace;
+.secondary-btn:hover { background: transparent; border-color: var(--hacker-green); color: var(--hacker-green); transform: none; box-shadow: none; }
+
+
+/* === شاشة التحميل (Overlay) === */
+.loading-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.9); z-index: 2000;
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    visibility: hidden; opacity: 0; transition: 0.3s;
 }
-.progress-bar { width: 100%; height: 6px; background: #222; margin-top: 15px; }
-.progress-fill { height: 100%; background: var(--hacker-green); width: 100%; transition: width 0.1s linear; box-shadow: 0 0 10px var(--hacker-green); }
+.loading-overlay.active { visibility: visible; opacity: 1; }
+
+.spinner {
+    width: 60px; height: 60px; border: 5px solid #333;
+    border-top: 5px solid var(--hacker-green); border-radius: 50%;
+    animation: spin 1s linear infinite; margin-bottom: 20px;
+}
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+.loading-text { font-family: 'Fira Code'; color: var(--hacker-green); font-size: 1.2rem; }
 
 /* التنبيهات */
 .custom-toast {
     position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
-    background: #000; border: 1px solid var(--hacker-green);
-    color: var(--hacker-green); padding: 12px 30px; z-index: 1000;
+    background: rgba(10, 10, 10, 0.95); border-left: 4px solid var(--hacker-green);
+    color: #fff; padding: 15px 30px; z-index: 3000;
     opacity: 0; visibility: hidden; transition: 0.4s;
-    display: flex; gap: 10px; border-radius: 4px; box-shadow: 0 5px 20px #000;
+    border-radius: 4px; box-shadow: 0 5px 20px #000;
 }
-.custom-toast.show { top: 60px; opacity: 1; visibility: visible; }
+.custom-toast.show { top: 40px; opacity: 1; visibility: visible; }
 
 .hidden { display: none; }
 input[type="file"] { display: none; }
