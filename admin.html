@@ -3,30 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة القيادة</title>
+    <title>لوحة التحكم</title>
     <link rel="stylesheet" href="style.css">
     <style>.container { max-width: 900px; }</style>
 </head>
 <body>
     <div class="container">
         <div id="adminLogin">
-            <h2>دخول المشرف (ROOT)</h2>
+            <h2 id="adminTitle"></h2>
             <input type="email" id="adminEmail" placeholder="USER_ID">
             <input type="password" id="adminPass" placeholder="PASSPHRASE">
-            <button id="authBtn">توثيق الدخول</button>
+            <button id="authBtn" onclick="playSound('click')">توثيق الدخول</button>
         </div>
 
         <div id="adminPanel" class="hidden">
             <div style="display:flex; justify-content:space-between; margin-bottom:20px; border-bottom:1px solid #333; padding-bottom:15px;">
                 <h2 style="margin:0; border:none;">سجل العمليات</h2>
-                <button onclick="location.reload()" style="width:auto; margin:0;">تحديث البيانات</button>
+                <button onclick="playSound('click'); loadData()" style="width:auto; margin:0;">تحديث</button>
             </div>
-            <div id="requestsList" style="text-align: right;">جاري الاتصال بقاعدة البيانات...</div>
+            <div id="requestsList" style="text-align: right;">جاري الاتصال...</div>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
+        // إعدادات الصوت والماوس (نفس السكريبت للتوحيد)
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            if (type === 'click') {
+                osc.type = 'sine'; osc.frequency.setValueAtTime(800, audioCtx.currentTime); gain.gain.setValueAtTime(0.1, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.05);
+            }
+        }
+        document.addEventListener('mousemove', e => {
+            document.body.style.setProperty('--mouse-x', e.clientX + 'px');
+            document.body.style.setProperty('--mouse-y', e.clientY + 'px');
+        });
+        function typeWriter(text, elementId) {
+            let i = 0; const target = document.getElementById(elementId); target.innerHTML = "";
+            function type() { if (i < text.length) { target.innerHTML += text.charAt(i); i++; setTimeout(type, 50); } }
+            type();
+        }
+        window.onload = () => typeWriter("دخول المشرف (ROOT)", "adminTitle");
+
+        // Supabase Logic
         const SUPABASE_URL = 'https://zflgifemhopabfzgczgs.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_9xZcd3BkgL6cEQwHJitrew_mbX74lJW';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -39,13 +62,21 @@
                 document.getElementById('adminLogin').classList.add('hidden');
                 document.getElementById('adminPanel').classList.remove('hidden');
                 loadData();
-            } else {
-                alert("بيانات خاطئة!");
-            }
+            } else { alert("بيانات خاطئة!"); }
         });
+
+        // دالة حذف الطلب
+        async function deleteRequest(id) {
+            if(!confirm("هل أنت متأكد من حذف هذا الطلب نهائياً؟")) return;
+            playSound('click');
+            const { error } = await _supabase.from('requests').delete().eq('id', id);
+            if(error) alert("خطأ في الحذف");
+            else loadData(); // تحديث القائمة
+        }
 
         async function loadData() {
             const list = document.getElementById('requestsList');
+            list.innerHTML = 'جاري التحميل...';
             const { data } = await _supabase.from('requests').select('*').order('created_at', {ascending:false});
             
             list.innerHTML = '';
@@ -54,7 +85,7 @@
             data.forEach(r => {
                 const d = new Date(r.created_at).toLocaleString('ar-EG');
                 const div = document.createElement('div');
-                div.style.cssText = "background:#050505; border:1px solid #333; padding:20px; margin-bottom:15px; border-right: 4px solid #0f0;";
+                div.style.cssText = "background:#050505; border:1px solid #333; padding:20px; margin-bottom:15px; border-right: 4px solid #0f0; position:relative;";
                 div.innerHTML = `
                     <div style="color:#666; font-size:0.8rem; margin-bottom:10px; font-family:'Fira Code';">${d}</div>
                     <div style="background:#111; padding:15px; white-space:pre-wrap; color:#fff; margin-bottom:10px;">${r.user_data}</div>
@@ -63,6 +94,7 @@
                         <a href="${r.reg_proof_url}" target="_blank"><img src="${r.reg_proof_url}" height="80" style="border:1px solid #555"></a>
                         <a href="${r.dep_proof_url}" target="_blank"><img src="${r.dep_proof_url}" height="80" style="border:1px solid #555"></a>
                     </div>
+                    <button class="delete-btn" onclick="deleteRequest(${r.id})">❌ حذف الطلب</button>
                 `;
                 list.appendChild(div);
             });
