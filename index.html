@@ -3,18 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>بوابة الدخول</title>
+    <title>نظام الدخول</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
-        <h2>نظام الدخول المؤمن</h2>
-        <p style="color: #888; margin-bottom: 20px; font-size: 0.9rem;">>> يرجى إدخال شفرة التفعيل للمتابعة...</p>
+        <h2>COMMENCE_LOGIN //</h2>
+        <p style="color: var(--hacker-cyan); margin-bottom: 20px; font-size: 0.9rem; text-align: right;">> أدخل شفرة الوصول...</p>
         
-        <input type="text" id="accessCode" placeholder="أدخل الكود هنا..." style="text-align: center; font-weight: bold;">
+        <input type="text" id="accessCode" placeholder="[INPUT_CODE_HERE]" style="text-align: center; font-weight: bold;">
         
-        <button id="loginBtn">تنفيذ الدخول</button>
-        <button class="secondary-btn" onclick="window.location.href='create.html'">استخراج كود جديد</button>
+        <button id="loginBtn" data-text="EXECUTE_LOGIN">EXECUTE_LOGIN</button>
+        <button class="secondary-btn" onclick="window.location.href='create.html'" data-text="INITIALIZE_NEW_CODE">INITIALIZE_NEW_CODE</button>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -27,9 +27,9 @@
             const codeInput = document.getElementById('accessCode').value.trim();
             const btn = document.getElementById('loginBtn');
             
-            if (!codeInput) { alert("تنبيه: الحقل فارغ!"); return; }
+            if (!codeInput) { alert("ERROR: No input detected."); return; }
 
-            btn.innerText = "جاري الاتصال...";
+            btn.innerHTML = "VERIFYING...";
             btn.disabled = true;
 
             try {
@@ -42,12 +42,12 @@
                     localStorage.setItem('isLoggedIn', 'true');
                     window.location.href = 'app.html';
                 } else {
-                    alert("خطأ: الكود غير صحيح أو منتهي!");
-                    btn.innerText = "تنفيذ الدخول";
+                    alert("ACCESS_DENIED: Invalid code.");
+                    btn.innerHTML = "EXECUTE_LOGIN";
                     btn.disabled = false;
                 }
             } catch (err) {
-                alert("فشل الاتصال بالخادم");
+                alert("SYSTEM_FAILURE");
                 btn.disabled = false;
             }
         }
