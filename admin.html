@@ -3,25 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة التحكم</title>
+    <title>لوحة القيادة</title>
     <link rel="stylesheet" href="style.css">
     <style>.container { max-width: 900px; }</style>
 </head>
 <body>
     <div class="container">
         <div id="adminLogin">
-            <h2>دخول المشرف (Admin)</h2>
-            <input type="email" id="adminEmail" placeholder="البريد الإلكتروني">
-            <input type="password" id="adminPass" placeholder="كلمة المرور">
-            <button id="authBtn">تسجيل الدخول</button>
+            <h2>دخول المشرف (ROOT)</h2>
+            <input type="email" id="adminEmail" placeholder="USER_ID">
+            <input type="password" id="adminPass" placeholder="PASSPHRASE">
+            <button id="authBtn">توثيق الدخول</button>
         </div>
 
         <div id="adminPanel" class="hidden">
             <div style="display:flex; justify-content:space-between; margin-bottom:20px; border-bottom:1px solid #333; padding-bottom:15px;">
-                <h2 style="margin:0; border:none;">سجل الطلبات</h2>
-                <button onclick="location.reload()" style="width:auto; margin:0;">تحديث</button>
+                <h2 style="margin:0; border:none;">سجل العمليات</h2>
+                <button onclick="location.reload()" style="width:auto; margin:0;">تحديث البيانات</button>
             </div>
-            <div id="requestsList" style="text-align: right;">جاري التحميل...</div>
+            <div id="requestsList" style="text-align: right;">جاري الاتصال بقاعدة البيانات...</div>
         </div>
     </div>
 
@@ -35,7 +35,6 @@
             const e = document.getElementById('adminEmail').value;
             const p = document.getElementById('adminPass').value;
             
-            // بيانات الدخول الجديدة
             if(e === "mm@mm.mm" && p === "mm023123") {
                 document.getElementById('adminLogin').classList.add('hidden');
                 document.getElementById('adminPanel').classList.remove('hidden');
@@ -50,17 +49,17 @@
             const { data } = await _supabase.from('requests').select('*').order('created_at', {ascending:false});
             
             list.innerHTML = '';
-            if(!data || !data.length) { list.innerHTML = '<p>لا توجد طلبات.</p>'; return; }
+            if(!data || !data.length) { list.innerHTML = '<p>لا توجد بيانات.</p>'; return; }
 
             data.forEach(r => {
                 const d = new Date(r.created_at).toLocaleString('ar-EG');
                 const div = document.createElement('div');
-                div.style.cssText = "background:#000; border:1px solid #333; padding:15px; margin-bottom:15px;";
+                div.style.cssText = "background:#050505; border:1px solid #333; padding:20px; margin-bottom:15px; border-right: 4px solid #0f0;";
                 div.innerHTML = `
-                    <div style="color:#666; font-size:0.8rem; margin-bottom:5px;">${d}</div>
-                    <div style="background:#111; padding:10px; border-right:3px solid #0f0; white-space:pre-wrap; color:#fff;">${r.user_data}</div>
-                    <p>الكود: <span style="color:#0f0; font-weight:bold;">${r.generated_code}</span></p>
-                    <div style="display:flex; gap:10px; margin-top:10px;">
+                    <div style="color:#666; font-size:0.8rem; margin-bottom:10px; font-family:'Fira Code';">${d}</div>
+                    <div style="background:#111; padding:15px; white-space:pre-wrap; color:#fff; margin-bottom:10px;">${r.user_data}</div>
+                    <p>الكود: <span style="color:#0f0; font-weight:bold; font-family:'Fira Code'; font-size:1.2rem;">${r.generated_code}</span></p>
+                    <div style="display:flex; gap:10px; margin-top:15px;">
                         <a href="${r.reg_proof_url}" target="_blank"><img src="${r.reg_proof_url}" height="80" style="border:1px solid #555"></a>
                         <a href="${r.dep_proof_url}" target="_blank"><img src="${r.dep_proof_url}" height="80" style="border:1px solid #555"></a>
                     </div>
