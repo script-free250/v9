@@ -1,13 +1,14 @@
-/* style.css - Full Fill Rectangular Buttons */
+/* style.css - Ultra Hacker Theme (Final Version) */
 @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&display=swap');
 
 :root {
-    --bg-color: #050505;
-    --panel-bg: #0a0a0a;
-    --hacker-green: #0f0;
+    --bg-color: #020202;
+    --panel-bg: rgba(10, 10, 10, 0.9);
+    --hacker-green: #00ff41;  /* أخضر ماتريكس */
+    --hacker-dim: rgba(0, 255, 65, 0.1);
     --text-color: #e0e0e0;
-    --border-glow: 0 0 10px rgba(0, 255, 0, 0.2);
+    --border-glow: 0 0 10px var(--hacker-green);
 }
 
 * { box-sizing: border-box; }
@@ -19,151 +20,173 @@ body {
     color: var(--text-color);
     display: flex; justify-content: center; align-items: center;
     min-height: 100vh; direction: rtl;
+    overflow-x: hidden;
+    
+    /* خلفية الشبكة المتحركة */
     background-image: 
-        linear-gradient(rgba(0, 255, 0, 0.05) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0, 255, 0, 0.05) 1px, transparent 1px);
-    background-size: 40px 40px;
+        linear-gradient(var(--hacker-dim) 1px, transparent 1px),
+        linear-gradient(90deg, var(--hacker-dim) 1px, transparent 1px);
+    background-size: 30px 30px;
+    animation: gridMove 20s linear infinite;
+}
+
+/* حركة الخلفية */
+@keyframes gridMove {
+    0% { background-position: 0 0; }
+    100% { background-position: 0 600px; }
+}
+
+/* تأثير خطوط الشاشة (Scanlines) */
+body::after {
+    content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: repeating-linear-gradient(0deg, rgba(0,0,0,0.1), rgba(0,0,0,0.1) 1px, transparent 1px, transparent 2px);
+    pointer-events: none; z-index: 999;
 }
 
 .container {
     background-color: var(--panel-bg);
     padding: 2.5rem;
     border: 1px solid var(--hacker-green);
-    box-shadow: 0 0 15px rgba(0, 255, 0, 0.1);
-    border-radius: 10px;
+    box-shadow: 0 0 20px var(--hacker-dim);
+    border-radius: 5px;
     width: 90%;
-    max-width: 450px;
+    max-width: 480px;
     text-align: center;
     position: relative;
+    backdrop-filter: blur(5px);
+    animation: slideUp 0.6s cubic-bezier(0.18, 0.89, 0.32, 1.28);
 }
 
 .container.wide-mode { max-width: 850px; }
 
+@keyframes slideUp {
+    from { transform: translateY(50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
 h2 {
-    color: var(--hacker-green); margin-bottom: 25px;
-    font-weight: 900; border-bottom: 2px solid #222; padding-bottom: 15px;
+    color: var(--hacker-green); margin-bottom: 30px;
+    font-weight: 900; text-transform: uppercase;
+    text-shadow: 0 0 10px var(--hacker-green);
+    border-bottom: 2px solid #333; padding-bottom: 15px;
+    letter-spacing: 1px;
 }
 
 label.title {
     display: block; text-align: right; margin: 15px 0 8px;
-    color: var(--hacker-green); font-size: 0.9rem; font-weight: bold;
+    color: var(--hacker-green); font-size: 0.95rem; font-weight: bold;
+    text-shadow: 0 0 5px var(--hacker-dim);
 }
 
-/* === خيارات البرامج (مستطيل يملأ الحواف) === */
-/* === تعديل خيارات البرامج لتناسب الشعارات المستطيلة === */
-
+/* === خيارات البرامج (تصميم مستطيل مثالي للشعارات) === */
 .program-grid {
-    display: flex;
-    justify-content: center;
-    gap: 15px;
-    margin-bottom: 25px;
+    display: flex; justify-content: center; gap: 15px; margin-bottom: 25px;
 }
 
 .program-option {
     border: 2px solid #333;
-    background: #000; /* خلفية سوداء تندمج مع الحواف */
-    padding: 5px;     /* مسافة صغيرة جداً عشان اللوجو ما يلزقش في الحدود */
-    border-radius: 8px;
-    cursor: pointer;
-    transition: 0.3s;
-    
-    /* جعلنا العرض ضعف الطول تقريباً ليناسب الشعارات */
-    width: 160px;  /* عرض أكبر */
-    height: 80px;  /* طول مناسب */
-    
-    position: relative;
-    overflow: hidden;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    background: #000;
+    padding: 5px; /* هامش بسيط جداً لعدم التصاق اللوجو */
+    border-radius: 6px;
+    cursor: pointer; transition: 0.3s;
+    width: 160px; height: 85px; /* مستطيل عريض */
+    position: relative; overflow: hidden;
+    display: flex; justify-content: center; align-items: center;
 }
 
 .program-option:hover {
     border-color: #fff;
-    box-shadow: 0 0 15px rgba(255,255,255,0.2);
+    box-shadow: 0 0 15px rgba(255,255,255,0.3);
+    transform: translateY(-3px);
 }
 
 .program-option.selected {
     border-color: var(--hacker-green);
-    box-shadow: 0 0 20px var(--hacker-green);
+    box-shadow: 0 0 25px var(--hacker-green), inset 0 0 10px var(--hacker-green);
 }
 
 .program-option.selected::after {
-    content: "✔";
-    position: absolute;
-    top: -8px; right: -8px;
-    background: var(--hacker-green);
-    color: #000;
-    width: 25px; height: 25px;
-    border-radius: 50%;
-    display: flex; justify-content: center; align-items: center;
-    font-weight: bold; font-size: 0.9rem;
-    box-shadow: 0 0 5px #000;
-    z-index: 10;
+    content: "✔"; position: absolute; top: -8px; right: -8px;
+    background: var(--hacker-green); color: #000;
+    width: 25px; height: 25px; border-radius: 50%;
+    display: flex; justify-content: center; align-items: center; 
+    font-weight: bold; z-index: 10;
 }
 
-/* تنسيق الصورة */
 .program-icon {
-    width: 100%;
-    height: 100%;
-    
-    /* contain: معناها أظهر الصورة كاملة جوه المربع مهما كان حجمها (عشان ما تتقصش زي الصورة التانية) */
-    object-fit: contain; 
-    
-    /* لو الصور عندك خلفيتها شفافة، ده هيخليها تظهر بشكل احترافي */
-}}
+    width: 100%; height: 100%;
+    object-fit: contain; /* يظهر الشعار بالكامل مهما كان حجمه */
+    filter: grayscale(100%); transition: 0.3s;
+}
+
+.program-option:hover .program-icon, .program-option.selected .program-icon {
+    filter: grayscale(0%); transform: scale(1.05);
+}
 
 /* المدخلات */
-textarea, input[type="text"] {
-    width: 100%; background: #000;
+textarea, input[type="text"], input[type="email"], input[type="password"] {
+    width: 100%; background: #080808;
     border: 1px solid #333; border-right: 3px solid var(--hacker-green);
     padding: 15px; color: #fff; font-family: 'Cairo', sans-serif;
-    outline: none; transition: 0.3s;
+    outline: none; transition: 0.3s; font-size: 1rem;
 }
-textarea:focus { border-color: var(--hacker-green); box-shadow: 0 0 10px rgba(0,255,0,0.2); }
+
+textarea:focus, input:focus {
+    border-color: var(--hacker-green);
+    background: #111;
+    box-shadow: 0 0 15px var(--hacker-dim);
+}
 
 /* رفع الملفات */
 .upload-box {
-    border: 2px dashed #444; background: rgba(0, 255, 0, 0.02);
+    border: 2px dashed #444; background: rgba(0, 255, 65, 0.02);
     padding: 15px; cursor: pointer; color: #888; margin-bottom: 10px;
     display: flex; justify-content: space-between; align-items: center;
     transition: 0.3s;
 }
-.upload-box:hover { border-color: var(--hacker-green); color: var(--hacker-green); }
-.upload-box.uploaded { border-style: solid; border-color: var(--hacker-green); color: var(--hacker-green); background: rgba(0,255,0,0.1); }
+.upload-box:hover { border-color: var(--hacker-green); color: var(--hacker-green); box-shadow: inset 0 0 10px var(--hacker-dim); }
+.upload-box.uploaded { border-style: solid; border-color: var(--hacker-green); color: var(--hacker-green); background: rgba(0,255,65,0.1); }
 
 /* الأزرار */
 button {
-    width: 100%; padding: 15px; margin-top: 20px;
+    width: 100%; padding: 16px; margin-top: 20px;
     border: 2px solid var(--hacker-green); background: transparent;
-    color: var(--hacker-green); font-weight: bold; font-size: 1.1rem;
+    color: var(--hacker-green); font-weight: 900; font-size: 1.1rem;
     cursor: pointer; font-family: 'Cairo', sans-serif; transition: 0.2s;
+    text-transform: uppercase; letter-spacing: 1px;
+    position: relative; overflow: hidden;
 }
-button:hover { background: var(--hacker-green); color: #000; box-shadow: 0 0 20px var(--hacker-green); }
 
-.secondary-btn { border-color: #555; color: #777; }
+button:hover {
+    background: var(--hacker-green); color: #000;
+    box-shadow: 0 0 30px var(--hacker-green);
+}
+
+.secondary-btn { border-color: #666; color: #888; }
 .secondary-btn:hover { border-color: var(--hacker-green); color: var(--hacker-green); background: transparent; }
 
 /* شاشة التطبيق */
 .monitor-screen {
     background: #000; border: 2px solid #333; padding: 20px;
-    margin: 20px 0; border-radius: 5px;
+    margin: 20px 0; border-radius: 5px; position: relative;
+    box-shadow: inset 0 0 20px #000;
 }
 .big-number {
-    font-size: 3.5rem; color: var(--hacker-green); font-weight: 900;
-    text-shadow: 0 0 15px var(--hacker-green); margin: 10px 0; direction: ltr;
+    font-size: 4rem; color: var(--hacker-green); font-weight: 900;
+    text-shadow: 0 0 20px var(--hacker-green); margin: 15px 0; direction: ltr; font-family: 'Fira Code', monospace;
 }
-.progress-bar { width: 100%; height: 5px; background: #222; margin-top: 15px; }
-.progress-fill { height: 100%; background: var(--hacker-green); width: 100%; transition: width 0.1s linear; }
+.progress-bar { width: 100%; height: 6px; background: #222; margin-top: 15px; border-radius: 3px; }
+.progress-fill { height: 100%; background: var(--hacker-green); width: 100%; transition: width 0.1s linear; box-shadow: 0 0 10px var(--hacker-green); }
 
 /* التنبيهات */
 .custom-toast {
     position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
     background: #000; border: 1px solid var(--hacker-green);
-    color: var(--hacker-green); padding: 10px 30px; z-index: 1000;
-    opacity: 0; visibility: hidden; transition: 0.3s; display: flex; gap: 10px;
+    color: var(--hacker-green); padding: 12px 30px; z-index: 1000;
+    opacity: 0; visibility: hidden; transition: 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+    display: flex; gap: 10px; border-radius: 4px; box-shadow: 0 5px 20px #000;
 }
-.custom-toast.show { top: 50px; opacity: 1; visibility: visible; }
+.custom-toast.show { top: 60px; opacity: 1; visibility: visible; }
 
 .hidden { display: none; }
 input[type="file"] { display: none; }
