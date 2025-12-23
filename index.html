@@ -7,6 +7,9 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body style="display:none;" id="bodyContent">
+    <div class="live-counter" id="liveCounter">المتصلين: ...</div>
+    <a href="https://t.me/YOUR_TELEGRAM" class="telegram-float" target="_blank">✈</a>
+
     <div id="loginModal" class="modal-overlay">
         <div class="modal-box">
             <div class="modal-title" id="modalTitle">[ SYSTEM_ALERT ]</div>
@@ -15,23 +18,59 @@
         </div>
     </div>
 
-    <div class="container">
+    <div class="container" id="mainContainer">
         <h2>نظام الوصول المؤمن</h2>
         <p style="color: #888; margin-bottom: 20px;">>> أدخل مفتاح الوصول للمتابعة...</p>
-        <input type="text" id="accessCode" placeholder="XX-XXXX-XX" style="text-align: center; font-weight: bold; font-family:'Fira Code'; letter-spacing:2px;">
+        
+        <div class="input-wrapper">
+            <input type="text" id="accessCode" placeholder="XX-XXXX-XX" style="text-align: center; font-weight: bold; font-family:'Fira Code'; letter-spacing:2px; padding-left: 40px;">
+            <button class="paste-btn" onclick="pasteCode()" title="لصق الكود">📋</button>
+        </div>
+
         <button id="loginBtn">بدء الاتصال</button>
         <button class="secondary-btn" onclick="window.location.href='create.html'" style="width:100%; border-radius:4px;">طلب مفتاح جديد</button>
+        <p id="vpnWarning" style="color: var(--warning-orange); font-size: 0.8rem; margin-top: 10px; display: none;">⚠️ تحذير: تم اكتشاف اتصال VPN/Proxy</p>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        function showModal(title, msg) { document.getElementById('modalTitle').innerText = title; document.getElementById('modalMsg').innerText = msg; document.getElementById('loginModal').classList.add('active'); }
-        function closeModal() { document.getElementById('loginModal').classList.remove('active'); }
+        // Supabase Init
         const SUPABASE_URL = 'https://zflgifemhopabfzgczgs.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_9xZcd3BkgL6cEQwHJitrew_mbX74lJW';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+        // دوال المساعدة
+        function showModal(title, msg) { document.getElementById('modalTitle').innerText = title; document.getElementById('modalMsg').innerText = msg; document.getElementById('loginModal').classList.add('active'); }
+        function closeModal() { document.getElementById('loginModal').classList.remove('active'); }
+        async function pasteCode() { const text = await navigator.clipboard.readText(); document.getElementById('accessCode').value = text; }
+        
+        function shakeScreen() {
+            const container = document.getElementById('mainContainer');
+            container.classList.add('shake-element');
+            setTimeout(() => container.classList.remove('shake-element'), 500);
+        }
+
+        // كشف VPN (مقارنة المنطقة الزمنية)
+        function checkVPN() {
+            const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            // يمكنك تغيير المنطقة الزمنية حسب المنطقة المستهدفة (مثلاً Africa/Cairo)
+            if (timeZone !== "Africa/Cairo" && timeZone !== "Asia/Riyadh") { 
+                document.getElementById('vpnWarning').style.display = 'block';
+            }
+        }
+
+        // عداد زوار وهمي
+        function updateLiveCounter() {
+            const base = 300;
+            const variation = Math.floor(Math.random() * 50);
+            document.getElementById('liveCounter').innerText = `المتصلين: ${base + variation}`;
+        }
+        setInterval(updateLiveCounter, 3000);
+
+        // فحص الحظر
         async function checkBan() {
+            updateLiveCounter();
+            checkVPN();
             try {
                 const res = await fetch('https://api.ipify.org?format=json');
                 const data = await res.json();
@@ -42,22 +81,25 @@
         }
         window.onload = checkBan;
 
+        // تسجيل الدخول
         async function runLogin() {
             const codeInput = document.getElementById('accessCode').value.trim();
             const btn = document.getElementById('loginBtn');
-            if (!codeInput) { showModal("تنبيه", "أدخل الكود أولاً."); return; }
+            if (!codeInput) { showModal("تنبيه", "أدخل الكود أولاً."); shakeScreen(); return; }
+            
             btn.innerText = "جاري التحقق..."; btn.disabled = true;
 
             try {
                 const { data } = await _supabase.from('active_codes').select('*').eq('code', codeInput).single();
                 if (!data) {
                     showModal("❌ خطأ", "الكود غير صحيح!");
+                    shakeScreen();
                 } else if (data.is_active === true) {
                     localStorage.setItem('isLoggedIn', 'true'); window.location.href = 'app.html';
                 } else {
                     showModal("⏳ قيد الانتظار", "هذا الكود صحيح ولكنه بانتظار موافقة الأدمن.");
                 }
-            } catch (err) { showModal("⚠️ خطأ", "فشل الاتصال."); } 
+            } catch (err) { showModal("⚠️ خطأ", "فشل الاتصال."); shakeScreen(); } 
             finally { btn.innerText = "بدء الاتصال"; btn.disabled = false; }
         }
         document.getElementById('loginBtn').addEventListener('click', runLogin);
