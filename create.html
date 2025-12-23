@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إنشاء كود</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h2>طلب كود تفعيل</h2>
+        
+        <label>بياناتك (البريد، الآيدي، ملاحظات):</label>
+        <textarea id="userData" placeholder="اكتب البريد : example@mail.com &#10;الايدي : 123456"></textarea>
+
+        <label>دليل التسجيل (صورة):</label>
+        <input type="file" id="regProof" accept="image/*">
+
+        <label>دليل الإيداع (صورة):</label>
+        <input type="file" id="depProof" accept="image/*">
+
+        <button onclick="submitRequest()" id="submitBtn">إنشاء الكود</button>
+        
+        <div id="codeDisplay" class="hidden">
+            <p>تم إنشاء الكود بنجاح!</p>
+            <div class="result-box" id="generatedCode"></div>
+            <p style="font-size: 0.8rem; color: #aaa;">انسخ الكود واذهب لصفحة الدخول</p>
+            <button class="secondary-btn" onclick="window.location.href='index.html'">العودة للدخول</button>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
