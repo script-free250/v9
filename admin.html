@@ -5,7 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>لوحة القيادة (ROOT)</title>
     <link rel="stylesheet" href="style.css">
-    <style>.container { max-width: 900px; }</style>
+    <style>
+        .container { max-width: 1000px; }
+        .profit-badge { background: gold; color: #000; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 0.8rem; }
+        .audit-log-box { background: #050505; border: 1px solid #333; height: 150px; overflow-y: scroll; font-family: 'Fira Code'; font-size: 0.8rem; color: #aaa; padding: 10px; margin-top: 20px; }
+    </style>
 </head>
 <body>
     <div id="confirmModal" class="modal-overlay">
@@ -37,9 +41,16 @@
 
         <div id="adminPanel" class="hidden">
             <div class="stats-grid">
-                <div class="stat-card"><span class="stat-number" id="totalCount">0</span><span class="stat-label">إجمالي</span></div>
-                <div class="stat-card"><span class="stat-number" id="todayCount">0</span><span class="stat-label">اليوم</span></div>
+                <div class="stat-card"><span class="stat-number" id="totalCount">0</span><span class="stat-label">طلبات</span></div>
+                <div class="stat-card" style="border-color: gold;"><span class="stat-number" id="totalMoney" style="color:gold;">$0</span><span class="stat-label">أرباح</span></div>
                 <div class="stat-card" style="border-color: var(--danger-red);"><span class="stat-number" id="bannedCount" style="color:var(--danger-red);">0</span><span class="stat-label">محظورين</span></div>
+            </div>
+
+            <div class="admin-controls">
+                <input type="text" id="searchInput" class="search-input" placeholder="بحث (ID / كود / اسم)..." onkeyup="filterRequests()">
+                <button class="filter-btn active" onclick="setFilter('all', this)">الكل</button>
+                <button class="filter-btn" onclick="setFilter('pending', this)">معلق</button>
+                <button class="filter-btn" onclick="setFilter('active', this)">مفعل</button>
             </div>
 
             <div style="display:flex; justify-content:space-between; margin-bottom:20px; border-bottom:1px solid #333; padding-bottom:15px;">
@@ -47,6 +58,9 @@
                 <button onclick="playSound('click'); loadData()" style="width:auto; margin:0; font-size:0.9rem; background:transparent; border:1px solid #555; color:#fff;">تحديث ↻</button>
             </div>
             <div id="requestsList" style="text-align: right;">جاري الاتصال...</div>
+            
+            <h3 style="color:#666; font-size:0.9rem; margin-top:20px;">System Audit Log:</h3>
+            <div id="auditLog" class="audit-log-box">تحميل السجل...</div>
         </div>
     </div>
 
@@ -57,7 +71,6 @@
         function typeWriter(text, elementId) { let i = 0; const target = document.getElementById(elementId); target.innerHTML = ""; function type() { if (i < text.length) { target.innerHTML += text.charAt(i); i++; setTimeout(type, 50); } } type(); }
         window.onload = () => typeWriter("دخول المشرف (ROOT)", "typewriterTitle");
 
-        // دوال المودال
         function showAlert(title, msg) { document.getElementById('alertTitle').innerText = title; document.getElementById('alertMsg').innerText = msg; document.getElementById('alertModal').classList.add('active'); }
         function closeAlert() { document.getElementById('alertModal').classList.remove('active'); }
         let confirmCallback = null;
@@ -69,54 +82,128 @@
         const SUPABASE_KEY = 'sb_publishable_9xZcd3BkgL6cEQwHJitrew_mbX74lJW';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+        let allRequests = [];
+        let currentFilter = 'all';
+
         document.getElementById('authBtn').addEventListener('click', () => {
             const e = document.getElementById('adminEmail').value; const p = document.getElementById('adminPass').value;
-            if(e === "mm@mm.mm" && p === "mm023123") { document.getElementById('adminLogin').classList.add('hidden'); document.getElementById('adminPanel').classList.remove('hidden'); loadData(); } else { showAlert("❌ خطأ", "بيانات خاطئة!"); }
+            if(e === "mm@mm.mm" && p === "mm023123") { document.getElementById('adminLogin').classList.add('hidden'); document.getElementById('adminPanel').classList.remove('hidden'); loadData(); loadAuditLog(); } else { showAlert("❌ خطأ", "بيانات خاطئة!"); }
         });
 
-        async function activateCode(code) {
-            showConfirm("تفعيل الكود", "هل تريد تفعيل الكود لهذا المستخدم؟", async () => {
+        async function logAction(action) {
+            // إضافة سجل في جدول audit_logs (يجب إنشاؤه في قاعدة البيانات)
+            const time = new Date().toISOString();
+            const logEntry = `[${time}] ADMIN: ${action}`;
+            await _supabase.from('audit_logs').insert([{ log: logEntry }]);
+            loadAuditLog();
+        }
+
+        async function activateCode(code, reqId) {
+            // طلب إدخال المبلغ عند التفعيل
+            let profit = prompt("💰 أدخل مبلغ الربح من هذا المستخدم (بالدولار أو العملة المحلية):", "0");
+            if (profit === null) return; // Cancelled
+
+            showConfirm("تفعيل الكود", `تفعيل الكود وتسجيل ربح ${profit}؟`, async () => {
+                // 1. تفعيل الكود
                 const { error } = await _supabase.from('active_codes').update({ is_active: true }).eq('code', code);
-                if(error) showAlert("خطأ", "فشل التفعيل."); else showAlert("نجاح ✅", "تم تفعيل الكود بنجاح.");
+                // 2. تحديث الربح في جدول الطلبات (يجب أن يكون هناك عمود profit في جدول requests)
+                await _supabase.from('requests').update({ profit: profit, status: 'active' }).eq('id', reqId);
+                
+                if(error) showAlert("خطأ", "فشل التفعيل."); 
+                else {
+                    logAction(`Activated code ${code} - Profit: ${profit}`);
+                    showAlert("نجاح ✅", "تم تفعيل الكود وتسجيل الربح.");
+                    loadData();
+                }
             });
         }
-        async function banUser(ip) { showConfirm("حظر IP", `حظر ${ip} نهائياً؟`, async () => { const { error } = await _supabase.from('banned_ips').insert([{ ip: ip }]); if(error) showAlert("خطأ", "فشل الحظر."); else { showAlert("تم", "تم الحظر 🚫"); loadData(); } }); }
-        async function deleteRequest(id) { showConfirm("حذف", "حذف السجل نهائياً؟", async () => { await _supabase.from('requests').delete().eq('id', id); loadData(); }); }
+
+        async function banUser(ip) { showConfirm("حظر IP", `حظر ${ip} نهائياً؟`, async () => { const { error } = await _supabase.from('banned_ips').insert([{ ip: ip }]); logAction(`Banned IP ${ip}`); if(error) showAlert("خطأ", "فشل الحظر."); else { showAlert("تم", "تم الحظر 🚫"); loadData(); } }); }
+        async function deleteRequest(id) { showConfirm("حذف", "حذف السجل نهائياً؟", async () => { await _supabase.from('requests').delete().eq('id', id); logAction(`Deleted Request ID ${id}`); loadData(); }); }
+
+        function setFilter(type, btn) {
+            currentFilter = type;
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            renderList();
+        }
+
+        function filterRequests() { renderList(); }
+
+        async function loadAuditLog() {
+            const { data } = await _supabase.from('audit_logs').select('*').order('created_at', {ascending:false}).limit(20);
+            const logBox = document.getElementById('auditLog');
+            if(data) logBox.innerHTML = data.map(l => `<div>${l.log}</div>`).join('');
+        }
 
         async function loadData() {
             const list = document.getElementById('requestsList'); list.innerHTML = 'جاري التحميل...';
+            // جلب البيانات مع عمود الربح
             const { data: requests } = await _supabase.from('requests').select('*').order('created_at', {ascending:false});
             const { count: bannedCount } = await _supabase.from('banned_ips').select('*', { count: 'exact', head: true });
 
             if(requests) {
+                allRequests = requests;
+                // حساب إجمالي الأرباح
+                let totalMoney = 0;
+                requests.forEach(r => { if(r.profit) totalMoney += parseFloat(r.profit); });
+                
                 document.getElementById('totalCount').innerText = requests.length;
+                document.getElementById('totalMoney').innerText = "$" + totalMoney;
                 document.getElementById('bannedCount').innerText = bannedCount || 0;
-                const today = new Date().toISOString().split('T')[0];
-                document.getElementById('todayCount').innerText = requests.filter(r => r.created_at.startsWith(today)).length;
-                list.innerHTML = '';
-                requests.forEach(r => {
-                    const ipMatch = r.user_data.match(/IP: ([\d\.]+)/);
-                    const userIP = ipMatch ? ipMatch[1] : 'Unknown';
-                    const d = new Date(r.created_at).toLocaleString('ar-EG');
-                    const div = document.createElement('div');
-                    div.style.cssText = "background:#050505; border:1px solid #333; padding:20px; margin-bottom:15px; border-right: 4px solid #0f0;";
-                    div.innerHTML = `
-                        <div style="color:#666; font-size:0.8rem; margin-bottom:10px; font-family:'Fira Code'; display:flex; justify-content:space-between;"><span>${d}</span><span style="color:#fff;">IP: ${userIP}</span></div>
-                        <div style="background:#111; padding:15px; white-space:pre-wrap; color:#fff; margin-bottom:10px;">${r.user_data}</div>
-                        <p>الكود: <span style="color:#0f0; font-weight:bold; font-family:'Fira Code'; font-size:1.2rem;">${r.generated_code}</span></p>
-                        <div style="display:flex; gap:10px; margin-top:15px; flex-wrap:wrap;">
-                            <a href="${r.reg_proof_url}" target="_blank"><img src="${r.reg_proof_url}" height="60" style="border:1px solid #555"></a>
-                            <a href="${r.dep_proof_url}" target="_blank"><img src="${r.dep_proof_url}" height="60" style="border:1px solid #555"></a>
-                        </div>
-                        <div style="margin-top:15px; border-top:1px dashed #333; padding-top:10px;">
-                            <button class="action-btn activate-btn" onclick="activateCode('${r.generated_code}')">✅ تفعيل</button>
-                            <button class="action-btn ban-btn" onclick="banUser('${userIP}')">🚫 حظر</button>
-                            <button class="action-btn delete-btn" onclick="deleteRequest(${r.id})">🗑️ حذف</button>
-                        </div>
-                    `;
-                    list.appendChild(div);
-                });
+                
+                renderList();
             } else { list.innerHTML = '<p>لا توجد بيانات.</p>'; }
+        }
+
+        function renderList() {
+            const list = document.getElementById('requestsList');
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            list.innerHTML = '';
+
+            const filtered = allRequests.filter(r => {
+                const matchesSearch = r.user_data.toLowerCase().includes(search) || r.generated_code.toLowerCase().includes(search);
+                const isActive = r.status === 'active'; // نفترض وجود عمود status أو يتم استنتاجه
+                if (currentFilter === 'active' && !isActive) return false;
+                if (currentFilter === 'pending' && isActive) return false;
+                return matchesSearch;
+            });
+
+            filtered.forEach(r => {
+                const ipMatch = r.user_data.match(/IP: ([\d\.]+)/);
+                const userIP = ipMatch ? ipMatch[1] : 'Unknown';
+                // استخراج نوع الجهاز
+                const deviceMatch = r.user_data.match(/Device: (\w+)/);
+                const device = deviceMatch ? deviceMatch[1] : 'Unknown';
+                const deviceIcon = device === 'Mobile' ? '📱' : (device === 'Desktop' ? '💻' : '📟');
+                
+                const d = new Date(r.created_at).toLocaleString('ar-EG');
+                const profitDisplay = r.profit ? `<span class="profit-badge">+$${r.profit}</span>` : '';
+
+                const div = document.createElement('div');
+                div.style.cssText = "background:#050505; border:1px solid #333; padding:20px; margin-bottom:15px; border-right: 4px solid " + (r.status==='active'?'gold':'#0f0') + ";";
+                div.innerHTML = `
+                    <div style="color:#666; font-size:0.8rem; margin-bottom:10px; font-family:'Fira Code'; display:flex; justify-content:space-between;">
+                        <span>${d}</span>
+                        <span style="color:#fff;">${deviceIcon} ${userIP}</span>
+                    </div>
+                    <div style="background:#111; padding:15px; white-space:pre-wrap; color:#fff; margin-bottom:10px;">${r.user_data}</div>
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <p>الكود: <span style="color:#0f0; font-weight:bold; font-family:'Fira Code'; font-size:1.2rem;">${r.generated_code}</span></p>
+                        ${profitDisplay}
+                    </div>
+                    <div style="display:flex; gap:10px; margin-top:15px; flex-wrap:wrap;">
+                        <a href="${r.reg_proof_url}" target="_blank"><img src="${r.reg_proof_url}" height="60" style="border:1px solid #555"></a>
+                        <a href="${r.dep_proof_url}" target="_blank"><img src="${r.dep_proof_url}" height="60" style="border:1px solid #555"></a>
+                    </div>
+                    <div style="margin-top:15px; border-top:1px dashed #333; padding-top:10px;">
+                        <button class="action-btn activate-btn" onclick="activateCode('${r.generated_code}', ${r.id})">✅ تفعيل وتسجيل ربح</button>
+                        <button class="action-btn ban-btn" onclick="banUser('${userIP}')">🚫 حظر</button>
+                        <button class="action-btn delete-btn" onclick="deleteRequest(${r.id})">🗑️ حذف</button>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
         }
     </script>
 </body>
