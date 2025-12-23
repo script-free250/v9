@@ -29,7 +29,7 @@
         
         <div class="input-wrapper">
             <input type="text" id="accessCode" placeholder="XX-XXXX-XX" 
-                   style="text-align: center; font-weight: bold; font-family:'Fira Code'; letter-spacing:2px; padding-left: 45px;">
+                   style="text-align: center; font-weight: bold; font-family:'Fira Code'; letter-spacing:2px; padding-left: 55px;">
             <button class="paste-btn" onclick="pasteCode()" title="لصق الكود من الحافظة">📋</button>
         </div>
 
@@ -100,7 +100,7 @@
                     showModal("❌ خطأ", "الكود غير صحيح!");
                     shakeScreen();
                 } else if (data.is_active === true) {
-                    localStorage.setItem('isLoggedIn', 'true'); window.location.href = 'app'; // الرابط بدون .html
+                    localStorage.setItem('isLoggedIn', 'true'); window.location.href = 'app';
                 } else {
                     showModal("⏳ قيد الانتظار", "هذا الكود صحيح ولكنه بانتظار موافقة الأدمن.");
                 }
