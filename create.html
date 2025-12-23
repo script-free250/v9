@@ -9,36 +9,59 @@
 <body>
 
     <div id="toast" class="custom-toast">
-        <span id="toastIcon">[ALERT]</span>
-        <span id="toastMessage">SYSTEM_MESSAGE</span>
+        <span id="toastIcon">⚠️</span>
+        <span id="toastMessage">تنبيه</span>
     </div>
 
-    <div class="container">
-        <h2>NEW_REQUEST //</h2>
+    <div class="container wide-mode">
+        <h2>إنشاء تصريح دخول</h2>
         
-        <label class="title">> USER_DATA [EMAIL/ID]:</label>
-        <textarea id="userData" placeholder=">_ Enter data..."></textarea>
+        <label class="title">>> اختر البرنامج المطلوب:</label>
+        <div class="program-grid">
+            <div class="program-option" onclick="selectProgram('1x', this)">
+                <img src="1x.png" class="program-icon" alt="1x">
+                <div class="program-name">1x</div>
+            </div>
+            
+            <div class="program-option" onclick="selectProgram('m', this)">
+                <img src="m.png" class="program-icon" alt="m">
+                <div class="program-name">m</div>
+            </div>
+            
+            <div class="program-option" onclick="selectProgram('l', this)">
+                <img src="l.png" class="program-icon" alt="l">
+                <div class="program-name">l</div>
+            </div>
+        </div>
 
-        <label class="title">> UPLOAD_PROOF [REGISTRATION]:</label>
-        <label for="regProof" class="upload-box" id="regBox">
-            <span class="icon">[⬆]</span>
-            <span id="regText">SELECT_FILE //</span>
-            <input type="file" id="regProof" accept="image/*" onchange="handleFileSelect(this, 'regBox', 'regText')">
-        </label>
+        <label class="title">>> بيانات المستخدم (البريد والآيدي):</label>
+        <textarea id="userData" placeholder="اكتب البيانات هنا..."></textarea>
 
-        <label class="title">> UPLOAD_PROOF [DEPOSIT]:</label>
-        <label for="depProof" class="upload-box" id="depBox">
-            <span class="icon">[$]</span>
-            <span id="depText">SELECT_FILE //</span>
-            <input type="file" id="depProof" accept="image/*" onchange="handleFileSelect(this, 'depBox', 'depText')">
-        </label>
+        <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 250px;">
+                <label class="title">>> إثبات التسجيل:</label>
+                <label for="regProof" class="upload-box" id="regBox">
+                    <span id="regText">اضغط للاختيار...</span>
+                    <span>📂</span>
+                    <input type="file" id="regProof" accept="image/*" onchange="handleFileSelect(this, 'regBox', 'regText')">
+                </label>
+            </div>
+            <div style="flex: 1; min-width: 250px;">
+                <label class="title">>> إثبات الإيداع:</label>
+                <label for="depProof" class="upload-box" id="depBox">
+                    <span id="depText">اضغط للاختيار...</span>
+                    <span>💰</span>
+                    <input type="file" id="depProof" accept="image/*" onchange="handleFileSelect(this, 'depBox', 'depText')">
+                </label>
+            </div>
+        </div>
 
-        <button id="submitBtn" data-text="TRANSMIT_DATA & GENERATE">TRANSMIT_DATA & GENERATE</button>
+        <button id="submitBtn">تأكيد البيانات وتوليد الكود</button>
         
-        <div id="codeDisplay" class="hidden" style="margin-top: 20px; border-top: 2px dashed #333; padding-top: 20px;">
-            <p style="color:var(--hacker-green);">>> SUCCESS: Code generated.</p>
-            <div style="background:#000; padding:15px; border:2px solid var(--hacker-green); margin:15px 0; color:var(--hacker-green); font-size:1.5rem; letter-spacing:4px;" id="generatedCode"></div>
-            <button class="secondary-btn" onclick="window.location.href='index.html'" data-text="RETURN_TO_LOGIN">RETURN_TO_LOGIN</button>
+        <div id="codeDisplay" class="hidden" style="margin-top: 30px; border-top: 2px dashed #333; padding-top: 20px;">
+            <p style="color:var(--hacker-green);">>> تم التوليد بنجاح، انسخ الكود:</p>
+            <div style="background:#000; padding:15px; border:2px solid var(--hacker-green); margin:15px 0; font-size:1.8rem; font-weight:bold; letter-spacing:2px;" id="generatedCode"></div>
+            <button class="secondary-btn" onclick="window.location.href='index.html'">العودة للرئيسية</button>
         </div>
     </div>
 
@@ -48,63 +71,69 @@
         const SUPABASE_KEY = 'sb_publishable_9xZcd3BkgL6cEQwHJitrew_mbX74lJW';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        function showToast(message, type = 'error') {
-            const toast = document.getElementById('toast');
-            const msg = document.getElementById('toastMessage');
-            const icon = document.getElementById('toastIcon');
+        let selectedProgram = null;
 
-            msg.innerText = message;
-            toast.className = `custom-toast ${type} show`;
-            if(type === 'success') icon.innerText = '[SUCCESS]';
-            else icon.innerText = '[ERROR]';
-            setTimeout(() => { toast.classList.remove('show'); }, 4000);
+        function showToast(msg, type='error') {
+            const t = document.getElementById('toast');
+            document.getElementById('toastMessage').innerText = msg;
+            t.style.borderColor = type === 'success' ? '#0f0' : '#f00';
+            t.className = 'custom-toast show';
+            setTimeout(() => t.classList.remove('show'), 4000);
         }
 
         function handleFileSelect(input, boxId, textId) {
-            const box = document.getElementById(boxId);
-            const text = document.getElementById(textId);
-            if (input.files && input.files[0]) {
-                box.classList.add('uploaded');
-                text.innerText = "> FILE_LOADED: " + input.files[0].name;
+            if(input.files[0]) {
+                document.getElementById(boxId).classList.add('uploaded');
+                document.getElementById(textId).innerText = "تم: " + input.files[0].name;
             }
+        }
+
+        function selectProgram(name, el) {
+            selectedProgram = name;
+            document.querySelectorAll('.program-option').forEach(d => d.classList.remove('selected'));
+            el.classList.add('selected');
         }
 
         async function uploadImage(file) {
             const fileName = `${Date.now()}_${file.name.replace(/\s/g, '_')}`;
-            const { data, error } = await _supabase.storage.from('proofs').upload(fileName, file, { upsert: false });
-            if (error) throw error;
-            const { data: publicUrlData } = _supabase.storage.from('proofs').getPublicUrl(fileName);
-            return publicUrlData.publicUrl;
+            const { error } = await _supabase.storage.from('proofs').upload(fileName, file);
+            if(error) throw error;
+            const { data } = _supabase.storage.from('proofs').getPublicUrl(fileName);
+            return data.publicUrl;
         }
 
         async function runSubmit() {
             const userData = document.getElementById('userData').value;
-            const regProofFile = document.getElementById('regProof').files[0];
-            const depProofFile = document.getElementById('depProof').files[0];
+            const regFile = document.getElementById('regProof').files[0];
+            const depFile = document.getElementById('depProof').files[0];
             const btn = document.getElementById('submitBtn');
 
-            if (!userData) { showToast("MISSING_DATA"); return; }
-            if (!regProofFile) { showToast("MISSING_FILE"); return; }
-            if (!depProofFile) { showToast("MISSING_FILE"); return; }
+            if(!selectedProgram) { showToast("يجب اختيار البرنامج أولاً"); return; }
+            if(!userData) { showToast("بيانات المستخدم ناقصة"); return; }
+            if(!regFile || !depFile) { showToast("يجب رفع الصور المطلوبة"); return; }
 
-            btn.innerHTML = "UPLOADING_DATA...";
+            btn.innerText = "جاري المعالجة...";
             btn.disabled = true;
 
             try {
-                const regUrl = await uploadImage(regProofFile);
-                const depUrl = await uploadImage(depProofFile);
-                const generatedCode = 'CODE-' + Math.floor(100000 + Math.random() * 900000);
+                const regUrl = await uploadImage(regFile);
+                const depUrl = await uploadImage(depFile);
+                const code = 'CODE-' + Math.floor(100000 + Math.random() * 900000);
+                
+                // دمج اسم البرنامج مع البيانات
+                const fullData = `البرنامج المختار: [ ${selectedProgram} ]\n${userData}`;
 
-                await _supabase.from('requests').insert([{ user_data: userData, reg_proof_url: regUrl, dep_proof_url: depUrl, generated_code: generatedCode }]);
-                await _supabase.from('active_codes').insert([{ code: generatedCode }]);
+                await _supabase.from('requests').insert([{ user_data: fullData, reg_proof_url: regUrl, dep_proof_url: depUrl, generated_code: code }]);
+                await _supabase.from('active_codes').insert([{ code: code }]);
 
-                showToast("DATA_TRANSMITTED", "success");
+                showToast("تم بنجاح", "success");
                 document.getElementById('codeDisplay').classList.remove('hidden');
-                document.getElementById('generatedCode').innerText = generatedCode;
+                document.getElementById('generatedCode').innerText = code;
                 btn.style.display = 'none';
-            } catch (error) {
-                showToast("SYSTEM_FAILURE: " + error.message, "error");
-                btn.innerHTML = "TRANSMIT_DATA & GENERATE";
+            } catch (e) {
+                console.error(e);
+                showToast("حدث خطأ في النظام");
+                btn.innerText = "تأكيد البيانات وتوليد الكود";
                 btn.disabled = false;
             }
         }
