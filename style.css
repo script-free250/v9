@@ -1,13 +1,13 @@
-/* style.css - Arabic Hacker Theme Final */
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
+/* style.css - Professional Hacker Theme (Original) */
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&display=swap');
 
 :root {
-    --bg-color: #000000;         /* أسود حالك */
-    --panel-bg: #0a0a0a;         /* خلفية الكارت */
-    --neon-green: #00ff41;       /* أخضر هكر أصلي */
-    --neon-dim: rgba(0, 255, 65, 0.2);
+    --bg-color: #050505;         /* أسود حالك */
+    --container-bg: #0a0a0a;     /* خلفية الكونتير */
+    --hacker-green: #0f0;        /* الأخضر النيون الأساسي */
+    --hacker-cyan: #0ff;         /* السيان الثانوي */
     --text-color: #e0e0e0;
-    --border-glow: 0 0 10px var(--neon-dim), 0 0 20px var(--neon-dim);
+    --border-glow: 0 0 10px var(--hacker-green), 0 0 20px var(--hacker-green);
 }
 
 * { box-sizing: border-box; }
@@ -15,7 +15,7 @@
 body {
     margin: 0;
     padding: 0;
-    font-family: 'Cairo', sans-serif; /* الخط العربي الرسمي */
+    font-family: 'Fira Code', monospace; /* خط رقمي */
     background-color: var(--bg-color);
     color: var(--text-color);
     display: flex;
@@ -23,160 +23,196 @@ body {
     align-items: center;
     min-height: 100vh;
     direction: rtl;
-    
-    /* خلفية الشبكة المتحركة */
+    /* تأثير شبكة البيانات الخلفية */
     background-image: 
-        linear-gradient(rgba(0, 255, 65, 0.05) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0, 255, 65, 0.05) 1px, transparent 1px);
-    background-size: 40px 40px;
-    overflow-x: hidden;
+        linear-gradient(rgba(0, 255, 0, 0.1) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 255, 0, 0.1) 1px, transparent 1px);
+    background-size: 30px 30px;
+    animation: bgScroll 20s linear infinite;
+}
+
+/* حركة الخلفية */
+@keyframes bgScroll {
+    0% { background-position: 0 0; }
+    100% { background-position: 0 600px; }
+}
+
+/* تأثير خطوط الشاشة (CRT Scanlines) */
+body::after {
+    content: "";
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: repeating-linear-gradient(
+        0deg,
+        rgba(0, 0, 0, 0.15),
+        rgba(0, 0, 0, 0.15) 1px,
+        transparent 1px,
+        transparent 2px
+    );
+    pointer-events: none; /* لكي لا يعيق الضغط */
+    z-index: 999;
 }
 
 .container {
-    background-color: var(--panel-bg);
+    background-color: var(--container-bg);
     padding: 2.5rem;
-    border: 1px solid var(--neon-green);
-    box-shadow: 0 0 20px var(--neon-dim);
+    border: 2px solid var(--hacker-green);
+    box-shadow: var(--border-glow);
     width: 90%;
     max-width: 480px;
     text-align: center;
     position: relative;
-    border-radius: 8px;
+    /* تأثير وميض عند التحميل */
+    animation: terminalBoot 0.8s ease-out forwards;
 }
 
-/* العناوين */
+@keyframes terminalBoot {
+    0% { opacity: 0; transform: scaleY(0.01); }
+    50% { opacity: 1; transform: scaleY(0.01); }
+    100% { transform: scaleY(1); }
+}
+
 h2 {
     margin-bottom: 25px;
-    font-weight: 900;
-    color: var(--neon-green);
-    text-shadow: 0 0 10px var(--neon-dim);
-    border-bottom: 2px solid var(--neon-dim);
-    padding-bottom: 10px;
+    font-weight: 700;
+    color: var(--hacker-green);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    text-shadow: 0 0 10px var(--hacker-green);
 }
+
+h2::before { content: "> "; color: var(--hacker-cyan); }
 
 label.title {
     display: block; text-align: right; margin: 15px 0 8px;
-    color: var(--neon-green); font-size: 0.9rem; font-weight: bold;
+    color: var(--hacker-cyan); font-size: 0.9rem;
 }
 
-/* المدخلات */
+/* المدخلات كأنها شاشة طرفية */
 textarea, input[type="text"] {
-    width: 100%;
-    background: #050505;
-    border: 1px solid #333;
-    border-right: 3px solid var(--neon-green); /* خط أخضر يمين */
-    padding: 15px;
-    color: #fff;
-    font-family: 'Cairo', sans-serif;
-    font-size: 1rem;
-    transition: 0.3s;
-    outline: none;
+    width: 100%; background: #000;
+    border: 1px solid #333; border-left: 3px solid var(--hacker-green);
+    padding: 15px; color: var(--hacker-green);
+    font-family: 'Fira Code', monospace; resize: none;
+    transition: 0.3s; caret-color: var(--hacker-green);
 }
 
 textarea:focus, input:focus {
-    border-color: var(--neon-green);
-    box-shadow: 0 0 15px var(--neon-dim);
+    border-color: var(--hacker-green);
+    box-shadow: 0 0 15px rgba(0, 255, 0, 0.2);
+    outline: none;
 }
 
-/* مربعات الرفع */
+/* --- تصميم خانات الرفع --- */
 .upload-box {
-    border: 2px dashed #333;
-    background: rgba(0, 255, 65, 0.02);
-    padding: 20px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    color: #888;
-    margin-bottom: 15px;
-    font-weight: bold;
+    border: 2px dashed #333; background: rgba(0, 255, 0, 0.02);
+    padding: 20px; cursor: pointer; transition: all 0.3s ease;
+    display: flex; flex-direction: column; align-items: center;
+    color: #666; margin-bottom: 15px; position: relative; overflow: hidden;
 }
 
 .upload-box:hover {
-    border-color: var(--neon-green);
-    color: var(--neon-green);
-    box-shadow: inset 0 0 15px var(--neon-dim);
+    border-color: var(--hacker-cyan); color: var(--hacker-cyan);
+    box-shadow: inset 0 0 20px rgba(0, 255, 255, 0.1);
 }
 
 .upload-box.uploaded {
-    border-style: solid;
-    background: rgba(0, 255, 65, 0.1);
-    color: var(--neon-green);
-    border-color: var(--neon-green);
+    border-style: solid; border-color: var(--hacker-green); color: var(--hacker-green);
+    background: rgba(0, 255, 0, 0.05);
 }
 
-/* الأزرار مع تأثير الـ Glitch */
+.upload-box.uploaded::after {
+    content: "[DATA_LOCKED]"; position: absolute; top: 5px; right: 5px;
+    font-size: 0.7rem; opacity: 0.7;
+}
+
+input[type="file"] { display: none; }
+
+/* --- الأزرار مع تأثير GLITCH الاحترافي --- */
 button {
-    width: 100%; padding: 16px; margin-top: 20px;
-    border: 2px solid var(--neon-green);
-    background: transparent;
-    color: var(--neon-green);
-    font-weight: 900; font-size: 1.1rem;
-    cursor: pointer; position: relative;
-    font-family: 'Cairo', sans-serif;
-    transition: 0.2s;
-    overflow: hidden;
+    width: 100%; padding: 18px; margin-top: 20px;
+    border: 2px solid var(--hacker-green); background: transparent;
+    color: var(--hacker-green); font-weight: bold; font-size: 18px;
+    cursor: pointer; position: relative; overflow: hidden;
+    font-family: 'Fira Code', monospace; text-transform: uppercase;
+    letter-spacing: 2px; transition: 0.2s;
 }
 
 button:hover {
-    background: var(--neon-green);
-    color: #000;
-    box-shadow: 0 0 25px var(--neon-green);
+    background: var(--hacker-green); color: #000;
+    box-shadow: 0 0 20px var(--hacker-green);
+    animation: glitch-skew 0.5s linear infinite alternate-reverse;
+}
+
+/* صناعة تأثير التشويش (Glitch) */
+button::before, button::after {
+    content: attr(data-text);
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: #000; opacity: 0.5; display: flex;
+    justify-content: center; align-items: center; visibility: hidden;
+}
+
+button:hover::before {
+    visibility: visible; left: -2px; text-shadow: 2px 0 var(--hacker-cyan);
+    clip-path: polygon(0 20%, 100% 20%, 100% 40%, 0 40%);
+    animation: glitch-anim 0.3s linear infinite;
+}
+button:hover::after {
+    visibility: visible; left: 2px; text-shadow: -2px 0 red;
+    clip-path: polygon(0 60%, 100% 60%, 100% 80%, 0 80%);
+    animation: glitch-anim 0.3s linear infinite reverse;
+}
+
+@keyframes glitch-anim {
+    0% { clip-path: polygon(0 0, 100% 0, 100% 10%, 0 10%); }
+    20% { clip-path: polygon(0 30%, 100% 30%, 100% 40%, 0 40%); }
+    40% { clip-path: polygon(0 10%, 100% 10%, 100% 20%, 0 20%); }
+    60% { clip-path: polygon(0 70%, 100% 70%, 100% 80%, 0 80%); }
+    80% { clip-path: polygon(0 50%, 100% 50%, 100% 60%, 0 60%); }
+    100% { clip-path: polygon(0 90%, 100% 90%, 100% 100%, 0 100%); }
 }
 
 button:disabled {
     border-color: #555; color: #555; background: transparent;
-    cursor: not-allowed; box-shadow: none;
+    cursor: not-allowed; animation: none; box-shadow: none;
 }
 
 .secondary-btn {
-    border-color: #444; color: #888;
+    border-color: var(--hacker-cyan); color: var(--hacker-cyan);
 }
 .secondary-btn:hover {
-    border-color: var(--neon-green); color: var(--neon-green); background: transparent;
+    background: var(--hacker-cyan); color: #000;
+    box-shadow: 0 0 20px var(--hacker-cyan);
 }
 
-/* شاشة العرض الرقمية */
+/* شاشة التطبيق */
 .monitor-screen {
-    background: #000;
-    border: 2px solid #333;
-    padding: 20px;
-    border-radius: 5px;
-    margin: 20px 0;
-    position: relative;
-    box-shadow: inset 0 0 20px #000;
+    background: #000; border: 1px solid var(--hacker-green);
+    padding: 20px; margin: 20px 0; position: relative;
+    box-shadow: inset 0 0 15px rgba(0, 255, 0, 0.2);
 }
-
 .big-number {
-    font-size: 3.5rem;
-    color: var(--neon-green);
-    font-weight: 900;
-    text-shadow: 0 0 15px var(--neon-green);
-    margin: 10px 0;
-    direction: ltr; /* لكي تظهر الأرقام بشكل صحيح */
+    font-size: 3rem; color: var(--hacker-green); font-weight: bold;
+    text-shadow: 0 0 10px var(--hacker-green); margin: 15px 0;
 }
-
-/* شريط التقدم */
 .progress-bar {
-    width: 100%; height: 4px; background: #222; margin-top: 15px;
+    width: 100%; height: 5px; background: #222; margin-top: 15px;
 }
 .progress-fill {
-    height: 100%; background: var(--neon-green); width: 100%;
-    box-shadow: 0 0 10px var(--neon-green);
+    height: 100%; background: var(--hacker-green); width: 100%;
+    box-shadow: 0 0 10px var(--hacker-green);
 }
 
-/* الإشعار */
 .custom-toast {
     position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
-    background: #000; border: 1px solid var(--neon-green);
-    color: var(--neon-green); padding: 10px 30px;
-    font-family: 'Cairo', sans-serif; z-index: 1000;
+    background: #000; border: 2px solid var(--hacker-green);
+    color: var(--hacker-green); padding: 15px 30px;
+    font-family: 'Fira Code', monospace; z-index: 1000;
     display: flex; align-items: center; gap: 10px;
-    box-shadow: 0 0 20px var(--neon-dim);
     opacity: 0; visibility: hidden; transition: 0.3s;
+    box-shadow: 0 0 15px rgba(0, 255, 0, 0.3);
 }
 .custom-toast.show { top: 50px; opacity: 1; visibility: visible; }
+.custom-toast.error { border-color: red; color: red; box-shadow: 0 0 15px rgba(255, 0, 0, 0.3); }
 
 .hidden { display: none; }
-input[type="file"] { display: none; }
