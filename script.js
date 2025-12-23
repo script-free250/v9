@@ -1,195 +1,145 @@
-/* script.js - Final Version */
+/* style.css - Comfortable Hacker Theme */
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap'); /* للأرقام */
 
-// ==========================================
-// 1. إعدادات الاتصال بـ Supabase
-// ==========================================
-
-// رابط المشروع الخاص بك (الذي أرسلته للتو)
-const SUPABASE_URL = 'https://zflgifemhopabfzgczgs.supabase.co'; 
-
-// المفتاح العام (Publishable Key)
-const SUPABASE_KEY = 'sb_publishable_9xZcd3BkgL6cEQwHJitrew_mbX74lJW'; 
-
-// إنشاء الاتصال
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-// ==========================================
-// 2. وظيفة رفع الصور (إلى Storage)
-// ==========================================
-async function uploadImage(file) {
-    // ننشئ اسماً فريداً للصورة باستخدام التوقيت الحالي
-    // ونستبدل المسافات في اسم الملف بشرطة سفلية لتجنب الأخطاء
-    const fileName = `${Date.now()}_${file.name.replace(/\s/g, '_')}`;
-    
-    // الرفع إلى المجلد المسمى 'proofs'
-    const { data, error } = await supabase.storage
-        .from('proofs') 
-        .upload(fileName, file, {
-            cacheControl: '3600',
-            upsert: false
-        });
-
-    if (error) {
-        console.error('Upload Error:', error);
-        throw error;
-    }
-
-    // جلب الرابط العام للصورة لكي تظهر للأدمن
-    const { data: publicUrlData } = supabase.storage
-        .from('proofs')
-        .getPublicUrl(fileName);
-        
-    return publicUrlData.publicUrl;
+:root {
+    --bg-color: #0d1117;       /* رمادي مزرق داكن جداً (مريح للعين) */
+    --panel-bg: #161b22;       /* لون البطاقات */
+    --accent-green: #2ea043;   /* أخضر هادئ احترافي */
+    --accent-glow: rgba(46, 160, 67, 0.15);
+    --text-main: #c9d1d9;      /* أبيض مائل للرمادي للقراءة */
+    --text-dim: #8b949e;       /* نص فرعي */
+    --border: #30363d;
 }
 
-// ==========================================
-// 3. وظيفة زر "إنشاء الكود" (Create Code)
-// ==========================================
-async function submitRequest() {
-    const userData = document.getElementById('userData').value;
-    const regProofFile = document.getElementById('regProof').files[0];
-    const depProofFile = document.getElementById('depProof').files[0];
-    const btn = document.getElementById('submitBtn');
-
-    // التحقق من أن المستخدم أدخل كل شيء
-    if (!userData || !regProofFile || !depProofFile) {
-        alert("يرجى كتابة البيانات ورفع صورتي الإثبات");
-        return;
-    }
-
-    btn.innerText = "جاري الرفع والمعالجة...";
-    btn.disabled = true;
-
-    try {
-        // 1. رفع الصور والحصول على الروابط
-        const regUrl = await uploadImage(regProofFile);
-        const depUrl = await uploadImage(depProofFile);
-
-        // 2. توليد كود عشوائي (مثلاً: CODE-583920)
-        const generatedCode = 'CODE-' + Math.floor(100000 + Math.random() * 900000);
-
-        // 3. إرسال البيانات إلى جدول requests
-        const { error: insertError } = await supabase
-            .from('requests')
-            .insert([
-                { 
-                    user_data: userData, 
-                    reg_proof_url: regUrl, 
-                    dep_proof_url: depUrl,
-                    generated_code: generatedCode
-                }
-            ]);
-
-        if (insertError) throw insertError;
-
-        // 4. تفعيل الكود بإضافته لجدول active_codes
-        const { error: codeError } = await supabase
-            .from('active_codes')
-            .insert([{ code: generatedCode }]);
-            
-        if (codeError) throw codeError;
-
-        // 5. إظهار النتيجة للمستخدم
-        document.getElementById('codeDisplay').classList.remove('hidden');
-        document.getElementById('generatedCode').innerText = generatedCode;
-        btn.style.display = 'none';
-
-    } catch (error) {
-        console.error('Main Error:', error);
-        alert("حدث خطأ! \nالتفاصيل: " + error.message);
-        btn.innerText = "إنشاء الكود";
-        btn.disabled = false;
-    }
+body {
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    font-family: 'Cairo', sans-serif;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    direction: rtl;
+    background-image: radial-gradient(#1f2428 1px, transparent 1px);
+    background-size: 20px 20px; /* نقاط خلفية هادئة */
 }
 
-// ==========================================
-// 4. وظيفة تسجيل الدخول (Login)
-// ==========================================
-async function login() {
-    const codeInput = document.getElementById('accessCode').value.trim();
-    if (!codeInput) return;
-
-    // البحث عن الكود في جدول active_codes
-    const { data, error } = await supabase
-        .from('active_codes')
-        .select('*')
-        .eq('code', codeInput);
-
-    if (error) {
-        console.error(error);
-        alert("حدث خطأ في الاتصال");
-    } else if (data && data.length > 0) {
-        // الكود صحيح
-        localStorage.setItem('isLoggedIn', 'true');
-        window.location.href = 'app.html';
-    } else {
-        alert("الكود غير صحيح أو غير مفعل");
-    }
+.container {
+    background-color: var(--panel-bg);
+    padding: 2.5rem;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    box-shadow: 0 0 30px rgba(0,0,0,0.5);
+    width: 90%;
+    max-width: 450px;
+    text-align: center;
+    position: relative;
 }
 
-// ==========================================
-// 5. وظائف صفحة الأدمن (Admin Panel)
-// ==========================================
-function adminAuth() {
-    const email = document.getElementById('adminEmail').value;
-    const pass = document.getElementById('adminPass').value;
-
-    // التحقق من الأدمن
-    if (email === "mazen@admin.com" && pass === "mazen250999") {
-        document.getElementById('adminLogin').classList.add('hidden');
-        document.getElementById('adminPanel').classList.remove('hidden');
-        loadRequests();
-    } else {
-        alert("بيانات الدخول خاطئة");
-    }
+/* عنوان بلمسة تقنية */
+h2 {
+    color: var(--accent-green);
+    margin-bottom: 25px;
+    font-weight: 700;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 15px;
+    letter-spacing: 1px;
 }
 
-async function loadRequests() {
-    const list = document.getElementById('requestsList');
-    list.innerHTML = 'جاري تحميل الطلبات...';
-
-    // جلب الطلبات من جدول requests مرتبة من الأحدث للأقدم
-    const { data, error } = await supabase
-        .from('requests')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-    if (error) {
-        console.error(error);
-        list.innerHTML = '<p style="color:red">فشل تحميل البيانات. تأكد من إلغاء RLS في Supabase</p>';
-        return;
-    }
-
-    list.innerHTML = '';
-    
-    if (!data || data.length === 0) {
-        list.innerHTML = '<p>لا توجد طلبات جديدة</p>';
-        return;
-    }
-
-    // عرض كل طلب
-    data.forEach(req => {
-        const item = document.createElement('div');
-        item.className = 'request-item';
-        
-        // تنسيق التاريخ
-        const date = new Date(req.created_at).toLocaleString('ar-EG');
-
-        item.innerHTML = `
-            <p><strong>وقت الطلب:</strong> ${date}</p>
-            <p><strong>بيانات المستخدم:</strong> <br>${req.user_data}</p>
-            <p><strong>الكود الممنوح:</strong> <span style="color:#4caf50; font-weight:bold; font-size:1.2em">${req.generated_code}</span></p>
-            <div style="margin-top:10px;">
-                <p>الأدلة (اضغط للتكبير):</p>
-                <a href="${req.reg_proof_url}" target="_blank" style="margin-left:10px;">
-                    <img src="${req.reg_proof_url}" width="100" height="100" style="object-fit:cover; border:1px solid #555; border-radius:5px;">
-                </a>
-                <a href="${req.dep_proof_url}" target="_blank">
-                    <img src="${req.dep_proof_url}" width="100" height="100" style="object-fit:cover; border:1px solid #555; border-radius:5px;">
-                </a>
-            </div>
-            <hr style="border-color:#333; margin-top:15px;">
-        `;
-        list.appendChild(item);
-    });
+label.title {
+    display: block; text-align: right; margin: 15px 0 8px;
+    color: var(--text-dim); font-size: 0.9rem;
 }
+
+/* الحقول والأزرار */
+textarea, input[type="text"] {
+    width: 100%;
+    background: #0d1117;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px;
+    color: var(--accent-green);
+    font-family: 'Roboto Mono', monospace; /* خط رقمي */
+    transition: 0.3s;
+    outline: none;
+}
+
+textarea:focus, input:focus {
+    border-color: var(--accent-green);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+/* الأزرار */
+button {
+    width: 100%; padding: 14px; margin-top: 20px;
+    background: var(--accent-green);
+    color: #fff; border: none; border-radius: 6px;
+    font-weight: bold; font-size: 16px; cursor: pointer;
+    font-family: 'Cairo', sans-serif;
+    transition: 0.2s;
+}
+
+button:hover {
+    background: #3fb950;
+    transform: translateY(-1px);
+}
+
+button:disabled { background: #21262d; color: #484f58; cursor: not-allowed; }
+
+.secondary-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+}
+.secondary-btn:hover { border-color: var(--text-main); color: var(--text-main); background: transparent; }
+
+/* === تصميم صفحة العرض (App) === */
+.monitor-screen {
+    background: #000;
+    border: 1px solid #333;
+    padding: 20px;
+    border-radius: 8px;
+    margin: 20px 0;
+    font-family: 'Roboto Mono', monospace;
+    position: relative;
+}
+
+.big-number {
+    font-size: 3.5rem;
+    color: var(--accent-green);
+    font-weight: bold;
+    text-shadow: 0 0 10px rgba(46, 160, 67, 0.4);
+    margin: 10px 0;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 4px;
+    background: #21262d;
+    margin-top: 15px;
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: var(--accent-green);
+    width: 100%;
+    transition: width 0.1s linear; /* حركة ناعمة */
+}
+
+/* تصميم خانات الرفع */
+.upload-box {
+    border: 1px dashed var(--border);
+    background: #0d1117; padding: 20px;
+    border-radius: 6px; cursor: pointer;
+    color: var(--text-dim); transition: 0.3s;
+    display: flex; flex-direction: column; align-items: center;
+}
+.upload-box:hover { border-color: var(--accent-green); color: var(--accent-green); }
+.upload-box.uploaded { border-style: solid; border-color: var(--accent-green); color: var(--accent-green); }
+
+.hidden { display: none; }
+input[type="file"] { display: none; }
