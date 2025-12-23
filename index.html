@@ -3,20 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام الوصول</title>
+    <title>بوابة الدخول</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
-        <h2>نظام تسجيل الدخول</h2>
-        <p style="color: var(--text-dim); font-size: 0.9rem;">الشبكة مؤمنة. يرجى إدخال مفتاح الوصول.</p>
+        <h2>نظام الدخول المؤمن</h2>
+        <p style="color: #888; margin-bottom: 20px; font-size: 0.9rem;">>> يرجى إدخال شفرة التفعيل للمتابعة...</p>
         
-        <input type="text" id="accessCode" placeholder="أدخل الكود هنا..." style="text-align: center; direction: ltr;">
+        <input type="text" id="accessCode" placeholder="أدخل الكود هنا..." style="text-align: center; font-weight: bold;">
         
-        <button id="loginBtn">بدء الاتصال</button>
-        <button class="secondary-btn" onclick="window.location.href='create.html'">طلب كود وصول جديد</button>
-        
-        </div>
+        <button id="loginBtn">تنفيذ الدخول</button>
+        <button class="secondary-btn" onclick="window.location.href='create.html'">استخراج كود جديد</button>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
@@ -28,9 +27,9 @@
             const codeInput = document.getElementById('accessCode').value.trim();
             const btn = document.getElementById('loginBtn');
             
-            if (!codeInput) { alert("يرجى إدخال الكود"); return; }
+            if (!codeInput) { alert("تنبيه: الحقل فارغ!"); return; }
 
-            btn.innerText = "جاري التحقق...";
+            btn.innerText = "جاري الاتصال...";
             btn.disabled = true;
 
             try {
@@ -43,12 +42,12 @@
                     localStorage.setItem('isLoggedIn', 'true');
                     window.location.href = 'app.html';
                 } else {
-                    alert("الكود غير صحيح أو منتهي الصلاحية");
-                    btn.innerText = "بدء الاتصال";
+                    alert("خطأ: الكود غير صحيح أو منتهي!");
+                    btn.innerText = "تنفيذ الدخول";
                     btn.disabled = false;
                 }
             } catch (err) {
-                alert("خطأ في الاتصال");
+                alert("فشل الاتصال بالخادم");
                 btn.disabled = false;
             }
         }
