@@ -1,4 +1,4 @@
-/* style.css - النسخة المحسنة النهائية (Cyberpunk Design) */
+/* style.css - النسخة النهائية (Clean URLs + Security Fixes) */
 @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&display=swap');
 
@@ -23,8 +23,6 @@ body {
     display: flex; justify-content: center; align-items: center;
     min-height: 100vh; direction: rtl;
     overflow-x: hidden; position: relative;
-    
-    /* خلفية المطر الرقمي */
     background-image: linear-gradient(0deg, transparent 24%, var(--hacker-dim) 25%, var(--hacker-dim) 26%, transparent 27%, transparent 74%, var(--hacker-dim) 75%, var(--hacker-dim) 76%, transparent 77%, transparent), 
                       linear-gradient(90deg, transparent 24%, var(--hacker-dim) 25%, var(--hacker-dim) 26%, transparent 27%, transparent 74%, var(--hacker-dim) 75%, var(--hacker-dim) 76%, transparent 77%, transparent);
     background-size: 40px 40px;
@@ -33,7 +31,6 @@ body {
 
 @keyframes matrixMove { 0% { background-position: 0 0; } 100% { background-position: 40px 40px; } }
 
-/* تأثير الاهتزاز */
 @keyframes shake {
     0%, 100% { transform: translateX(0); }
     10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
@@ -41,7 +38,6 @@ body {
 }
 .shake-element { animation: shake 0.4s ease-in-out; }
 
-/* تأثير النبض للأزرار */
 @keyframes pulse-green {
     0% { box-shadow: 0 0 0 0 rgba(0, 255, 65, 0.4); }
     70% { box-shadow: 0 0 0 10px rgba(0, 255, 65, 0); }
@@ -69,7 +65,6 @@ body::before {
 .container.wide-mode { max-width: 900px; }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-/* === العداد الحي === */
 .live-counter {
     position: fixed; top: 20px; right: 20px;
     background: rgba(0,0,0,0.7); border: 1px solid var(--hacker-green);
@@ -80,7 +75,6 @@ body::before {
 .live-counter::before { content: "●"; color: #ff3333; margin-left: 6px; animation: blink 1s infinite; }
 @keyframes blink { 50% { opacity: 0; } }
 
-/* === أيقونة تليجرام === */
 .telegram-float {
     position: fixed; bottom: 25px; right: 25px;
     background: #24A1DE; color: white;
@@ -92,7 +86,6 @@ body::before {
 .telegram-float:hover { transform: scale(1.1) translateY(-5px); box-shadow: 0 0 35px #24A1DE; }
 .telegram-float svg { width: 28px; height: 28px; fill: #fff; }
 
-/* === تحسين المدخلات والزر === */
 .input-wrapper { position: relative; width: 100%; margin-bottom: 0; }
 .paste-btn {
     position: absolute; left: 8px; top: 50%; transform: translateY(-50%);
@@ -114,7 +107,6 @@ textarea:focus, input:focus {
     background: rgba(0, 20, 10, 0.8);
 }
 
-/* Modals */
 .modal-overlay {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     background: rgba(0,0,0,0.9); z-index: 4000;
@@ -138,7 +130,6 @@ textarea:focus, input:focus {
 .modal-btn.cancel { border-color: var(--danger-red); color: var(--danger-red); }
 .modal-btn.cancel:hover { background: var(--danger-red); color: #fff; }
 
-/* Elements styling */
 h2 { color: var(--hacker-green); margin-bottom: 30px; font-weight: 900; text-transform: uppercase; text-shadow: 0 0 20px rgba(0, 255, 65, 0.6); letter-spacing: 1.5px; }
 label.title { display: block; text-align: right; margin: 20px 0 10px; color: var(--hacker-green); font-size: 1rem; font-weight: bold; }
 
@@ -170,7 +161,6 @@ button:hover { background: linear-gradient(135deg, #006600, #00cc00); transform:
 .secondary-btn { background: transparent; border: 1px solid #444; color: #999; margin-top: 10px; border-radius: 50px; }
 .secondary-btn:hover { background: rgba(255,255,255,0.05); border-color: var(--hacker-green); color: var(--hacker-green); transform: none; box-shadow: none; }
 
-/* Admin Stats & List */
 .stats-grid { display: flex; gap: 15px; margin-bottom: 25px; }
 .stat-card { flex: 1; background: rgba(10,10,10,0.6); border: 1px solid #333; padding: 15px; border-radius: 10px; position: relative; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
 .stat-card::before { content:""; position: absolute; top:0; left:0; width:3px; height:100%; background: var(--hacker-green); box-shadow: 0 0 10px var(--hacker-green); }
@@ -193,4 +183,3 @@ button:hover { background: linear-gradient(135deg, #006600, #00cc00); transform:
 .search-input { flex: 2; border-radius: 8px; border: 1px solid #444; }
 .filter-btn { flex: 1; padding: 10px; background: #111; border: 1px solid #444; color: #fff; border-radius: 8px; margin: 0; transition: 0.3s; }
 .filter-btn.active { background: var(--hacker-green); color: #000; font-weight: bold; box-shadow: 0 0 15px rgba(0,255,65,0.3); border-color: var(--hacker-green); }
-[data-tooltip]:hover::after { content: attr(data-tooltip); position: absolute; bottom: 105%; left: 50%; transform: translateX(-50%); background: #000; border: 1px solid var(--hacker-green); padding: 6px 12px; font-size: 0.8rem; white-space: nowrap; z-index: 100; border-radius: 4px; pointer-events: none; box-shadow: 0 0 10px rgba(0,255,65,0.2); }
