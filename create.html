@@ -19,7 +19,7 @@
         <label>دليل الإيداع (صورة):</label>
         <input type="file" id="depProof" accept="image/*">
 
-        <button onclick="submitRequest()" id="submitBtn">إنشاء الكود</button>
+        <button id="submitBtn">إنشاء الكود</button>
         
         <div id="codeDisplay" class="hidden">
             <p>تم إنشاء الكود بنجاح!</p>
@@ -31,6 +31,86 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
-    <script src="script.js"></script>
+    <script>
+        const SUPABASE_URL = 'https://zflgifemhopabfzgczgs.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_9xZcd3BkgL6cEQwHJitrew_mbX74lJW';
+        
+        // إنشاء العميل
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // دالة رفع الصور
+        async function uploadImage(file) {
+            const fileName = `${Date.now()}_${file.name.replace(/\s/g, '_')}`;
+            const { data, error } = await _supabase.storage
+                .from('proofs') 
+                .upload(fileName, file, { cacheControl: '3600', upsert: false });
+
+            if (error) throw error;
+
+            const { data: publicUrlData } = _supabase.storage
+                .from('proofs')
+                .getPublicUrl(fileName);
+                
+            return publicUrlData.publicUrl;
+        }
+
+        // دالة تنفيذ الطلب
+        async function runSubmit() {
+            const userData = document.getElementById('userData').value;
+            const regProofFile = document.getElementById('regProof').files[0];
+            const depProofFile = document.getElementById('depProof').files[0];
+            const btn = document.getElementById('submitBtn');
+
+            if (!userData || !regProofFile || !depProofFile) {
+                alert("يرجى ملء البيانات واختيار الصور");
+                return;
+            }
+
+            btn.innerText = "جاري المعالجة...";
+            btn.disabled = true;
+
+            try {
+                // 1. رفع الصور
+                const regUrl = await uploadImage(regProofFile);
+                const depUrl = await uploadImage(depProofFile);
+
+                // 2. توليد الكود
+                const generatedCode = 'CODE-' + Math.floor(100000 + Math.random() * 900000);
+
+                // 3. الحفظ في قاعدة البيانات
+                const { error: insertError } = await _supabase
+                    .from('requests')
+                    .insert([{ 
+                        user_data: userData, 
+                        reg_proof_url: regUrl, 
+                        dep_proof_url: depUrl,
+                        generated_code: generatedCode
+                    }]);
+
+                if (insertError) throw insertError;
+
+                // 4. تفعيل الكود
+                const { error: codeError } = await _supabase
+                    .from('active_codes')
+                    .insert([{ code: generatedCode }]);
+                
+                if (codeError) throw codeError;
+
+                // نجاح
+                document.getElementById('codeDisplay').classList.remove('hidden');
+                document.getElementById('generatedCode').innerText = generatedCode;
+                btn.style.display = 'none';
+
+            } catch (error) {
+                console.error(error);
+                alert("حدث خطأ: " + error.message);
+                btn.innerText = "إنشاء الكود";
+                btn.disabled = false;
+            }
+        }
+
+        // تشغيل الزر
+        document.getElementById('submitBtn').addEventListener('click', runSubmit);
+    </script>
 </body>
 </html>
