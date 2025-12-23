@@ -3,54 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>وحدة التوليد</title>
+    <title>وحدة التحليل</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h2 style="margin: 0; border: none;">وحدة التحليل</h2>
-            <div style="font-size: 12px; color: var(--accent-green);">ONLINE ●</div>
+            <h2 style="margin: 0; border: none; font-size: 1.5rem;">نظام التحليل</h2>
+            <div style="font-size: 12px; color: var(--neon-green); font-weight: bold;">متصل ●</div>
         </div>
 
-        <p style="color: var(--text-dim);">جاري تحليل البيانات واستخراج النتائج...</p>
+        <p style="color: #888;">جاري استخراج البيانات من الخادم...</p>
 
         <div class="monitor-screen">
-            <div style="font-size: 0.8rem; color: #555; text-align: left; direction: ltr;">TARGET_VALUE</div>
+            <div style="font-size: 0.8rem; color: #555; text-align: left; direction: ltr;">TARGET_SIGNAL</div>
             <div class="big-number" id="randomNumber">--.--</div>
             
             <div class="progress-bar">
                 <div class="progress-fill" id="progressFill"></div>
             </div>
-            <div style="text-align: right; font-size: 0.7rem; color: #555; margin-top: 5px;">تحديث تلقائي: 7s</div>
+            <div style="text-align: right; font-size: 0.7rem; color: #555; margin-top: 5px;">التحديث التالي: 7 ثواني</div>
         </div>
 
-        <button class="secondary-btn" onclick="logout()">إنهاء الجلسة</button>
+        <button class="secondary-btn" onclick="logout()">إغلاق الجلسة</button>
     </div>
 
     <script>
-        // التحقق من الدخول
         if (!localStorage.getItem('isLoggedIn')) {
             window.location.href = 'index.html';
         }
 
         const display = document.getElementById('randomNumber');
         const progressBar = document.getElementById('progressFill');
-        const UPDATE_INTERVAL = 7000; // 7 ثواني
+        const UPDATE_INTERVAL = 7000;
         let startTime = Date.now();
 
         function generateNumber() {
-            // توليد رقم عشوائي من 1.00 إلى 30.00
             let num = (Math.random() * 29 + 1).toFixed(2);
-            
-            // تأثير وميض بسيط عند تغيير الرقم
             display.style.opacity = 0;
             setTimeout(() => {
                 display.innerText = num;
                 display.style.opacity = 1;
             }, 100);
-
-            // إعادة ضبط الوقت
             startTime = Date.now();
         }
 
@@ -60,12 +54,11 @@
             const percentage = (remaining / UPDATE_INTERVAL) * 100;
 
             if (remaining <= 0) {
-                generateNumber(); // توليد رقم جديد
+                generateNumber();
             } else {
                 progressBar.style.width = percentage + "%";
             }
-            
-            requestAnimationFrame(updateProgress); // تكرار الدالة بنعومة
+            requestAnimationFrame(updateProgress);
         }
 
         function logout() {
@@ -73,10 +66,8 @@
             window.location.href = 'index.html';
         }
 
-        // تشغيل فوري عند فتح الصفحة
         generateNumber();
         requestAnimationFrame(updateProgress);
-
     </script>
 </body>
 </html>
