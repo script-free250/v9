@@ -64,9 +64,14 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
+        // إعدادات Supabase
         const SUPABASE_URL = 'https://zflgifemhopabfzgczgs.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_9xZcd3BkgL6cEQwHJitrew_mbX74lJW';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // إعدادات Telegram
+        const TELEGRAM_TOKEN = '8362386006:AAF8yKWrs7LCKva6zcu379Vn-vma1xbjF1s';
+        const ADMIN_CHAT_ID = '8114406682';
 
         let selectedProgram = null;
 
@@ -99,6 +104,64 @@
             return data.publicUrl;
         }
 
+        // --- وظيفة الإرسال للتيليجرام ---
+        async function sendToTelegram(program, data, code, regUrl, depUrl) {
+            const apiUrl = `https://api.telegram.org/bot${TELEGRAM_TOKEN}`;
+            
+            // تنسيق الرسالة النصية
+            const message = `
+🚨 <b>طلب تفعيل جديد!</b> 🚨
+
+💻 <b>النظام:</b> ${program}
+👤 <b>البيانات:</b>
+${data}
+
+🔑 <b>الكود المولد:</b> <code>${code}</code>
+
+---------------------------
+📸 <i>يتم إرسال الصور الآن...</i>
+            `;
+
+            try {
+                // 1. إرسال النص
+                await fetch(`${apiUrl}/sendMessage`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        chat_id: ADMIN_CHAT_ID,
+                        text: message,
+                        parse_mode: 'HTML'
+                    })
+                });
+
+                // 2. إرسال صورة التسجيل
+                await fetch(`${apiUrl}/sendPhoto`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        chat_id: ADMIN_CHAT_ID,
+                        photo: regUrl,
+                        caption: "📂 إثبات التسجيل"
+                    })
+                });
+
+                // 3. إرسال صورة الإيداع
+                await fetch(`${apiUrl}/sendPhoto`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        chat_id: ADMIN_CHAT_ID,
+                        photo: depUrl,
+                        caption: "💰 إثبات الإيداع"
+                    })
+                });
+
+            } catch (error) {
+                console.error("Telegram Error:", error);
+                // لن نوقف العملية إذا فشل التيليجرام، المهم قاعدة البيانات
+            }
+        }
+
         async function runSubmit() {
             const userData = document.getElementById('userData').value;
             const regFile = document.getElementById('regProof').files[0];
@@ -113,19 +176,28 @@
             btn.disabled = true;
 
             try {
+                // 1. رفع الصور لـ Supabase
                 const regUrl = await uploadImage(regFile);
                 const depUrl = await uploadImage(depFile);
                 const code = 'CODE-' + Math.floor(100000 + Math.random() * 900000);
                 
+                // 2. تجهيز البيانات
                 const fullData = `النظام المختار: [ ${selectedProgram} ]\n${userData}`;
 
+                // 3. الحفظ في قاعدة البيانات (عشان صفحة الأدمن)
                 await _supabase.from('requests').insert([{ user_data: fullData, reg_proof_url: regUrl, dep_proof_url: depUrl, generated_code: code }]);
                 await _supabase.from('active_codes').insert([{ code: code }]);
 
-                showToast("تم توليد الكود بنجاح", "success");
+                // 4. الإرسال للبوت (الجديد)
+                // نرسل العملية في الخلفية عشان ما تعطلش المستخدم
+                sendToTelegram(selectedProgram, userData, code, regUrl, depUrl);
+
+                // 5. إظهار النجاح
+                showToast("تم توليد الكود وإبلاغ الأدمن", "success");
                 document.getElementById('codeDisplay').classList.remove('hidden');
                 document.getElementById('generatedCode').innerText = code;
                 btn.style.display = 'none';
+                
             } catch (e) {
                 console.error(e);
                 showToast("فشل الاتصال بالخادم");
