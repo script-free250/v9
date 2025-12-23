@@ -7,8 +7,16 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="toast" class="custom-toast"><span id="toastMessage">تنبيه</span></div>
-    
+    <div id="customModal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-title" id="modalTitle">[ SYSTEM_MSG ]</div>
+            <div class="modal-msg" id="modalMsg">...</div>
+            <div class="modal-actions">
+                <button class="modal-btn" onclick="closeModal()">موافق</button>
+            </div>
+        </div>
+    </div>
+
     <div id="loadingOverlay" class="loading-overlay">
         <div class="spinner"></div>
         <div id="loadingText" class="loading-text">جاري التحقق من الأمان...</div>
@@ -46,7 +54,7 @@
             </div>
         </div>
 
-        <button id="submitBtn" onclick="playSound('click')">حقن البيانات وتوليد الكود</button>
+        <button id="submitBtn" onclick="runSubmit()">حقن البيانات وتوليد الكود</button>
         
         <div id="codeDisplay" class="hidden" style="margin-top: 30px; border-top: 1px solid rgba(0,255,0,0.2); padding-top: 20px;">
             <p style="color:var(--hacker-green);">>> تم إرسال الطلب للمراجعة. الكود الخاص بك:</p>
@@ -71,6 +79,15 @@
         let userIP = "Unknown";
         let selectedProgram = null;
 
+        // دالة المودال الجديدة
+        function showModal(title, msg) {
+            document.getElementById('modalTitle').innerText = title;
+            document.getElementById('modalMsg').innerText = msg;
+            document.getElementById('customModal').classList.add('active');
+            playSound('click');
+        }
+        function closeModal() { document.getElementById('customModal').classList.remove('active'); }
+
         // فحص الحظر
         async function checkBan() {
             document.getElementById('loadingOverlay').classList.add('active');
@@ -81,71 +98,41 @@
                 const { data: banned } = await _supabase.from('banned_ips').select('*').eq('ip', userIP);
                 
                 if (banned && banned.length > 0) {
-                    document.body.innerHTML = `<div style="display:flex;justify-content:center;align-items:center;height:100vh;background:#000;color:red;flex-direction:column;text-align:center;"><h1 style="font-size:4rem;text-shadow:0 0 20px red;">🚫 ACCESS DENIED</h1><p style="font-family:'Fira Code'; font-size:1.5rem;">BANNED IP</p><p>${userIP}</p></div>`;
+                    document.body.innerHTML = `<div style="display:flex;justify-content:center;align-items:center;height:100vh;background:#000;color:red;flex-direction:column;text-align:center;"><h1 style="font-size:4rem;text-shadow:0 0 20px red;">🚫 ACCESS DENIED</h1><p style="font-family:'Fira Code'; font-size:1.5rem;">BANNED IP: ${userIP}</p></div>`;
                 } else {
                     document.getElementById('loadingOverlay').classList.remove('active');
                     document.getElementById('mainContainer').style.display = 'block';
                     typeWriter("إعداد تصريح جديد //", "typewriterTitle");
                 }
-            } catch (e) { document.getElementById('loadingOverlay').classList.remove('active'); document.getElementById('mainContainer').style.display = 'block'; }
+            } catch (e) {
+                document.getElementById('loadingOverlay').classList.remove('active');
+                document.getElementById('mainContainer').style.display = 'block';
+            }
         }
         window.onload = checkBan;
 
-        // المؤثرات
+        // دوال الصوت والماوس والتأثيرات
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        function playSound(type) {
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-            const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
-            osc.connect(gain); gain.connect(audioCtx.destination);
-            if (type === 'click') { osc.type = 'sine'; osc.frequency.setValueAtTime(800, audioCtx.currentTime); gain.gain.setValueAtTime(0.1, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.05); }
-            else if (type === 'success') { osc.type = 'square'; osc.frequency.setValueAtTime(400, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(1000, audioCtx.currentTime + 0.1); gain.gain.setValueAtTime(0.1, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.3); }
-        }
+        function playSound(type) { if (audioCtx.state === 'suspended') audioCtx.resume(); const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain(); osc.connect(gain); gain.connect(audioCtx.destination); if (type === 'click') { osc.type = 'sine'; osc.frequency.setValueAtTime(800, audioCtx.currentTime); gain.gain.setValueAtTime(0.1, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.05); } else if (type === 'success') { osc.type = 'square'; osc.frequency.setValueAtTime(400, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(1000, audioCtx.currentTime + 0.1); gain.gain.setValueAtTime(0.1, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.3); } }
         document.addEventListener('mousemove', e => { document.body.style.setProperty('--mouse-x', e.clientX + 'px'); document.body.style.setProperty('--mouse-y', e.clientY + 'px'); });
-        function typeWriter(text, elementId) {
-            let i = 0; const target = document.getElementById(elementId); target.innerHTML = "";
-            function type() { if (i < text.length) { target.innerHTML += text.charAt(i); i++; setTimeout(type, 50); } }
-            type();
-        }
-        function showToast(msg, type='error') {
-            const t = document.getElementById('toast'); document.getElementById('toastMessage').innerText = msg;
-            t.style.borderLeftColor = type === 'success' ? '#0f0' : '#f00'; t.className = 'custom-toast show'; setTimeout(() => t.classList.remove('show'), 4000);
-        }
-        function handleFileSelect(input, boxId, textId, previewId) {
-            if(input.files[0]) {
-                playSound('click'); const file = input.files[0];
-                document.getElementById(boxId).classList.add('uploaded'); document.getElementById(textId).innerText = "تم";
-                const reader = new FileReader(); reader.onload = e => { const img = document.getElementById(previewId); img.src = e.target.result; img.style.display = "block"; }; reader.readAsDataURL(file);
-            }
-        }
-        function selectProgram(name, el) { selectedProgram = name; document.querySelectorAll('.program-option').forEach(d => d.classList.remove('selected')); el.classList.add('selected'); }
-        function copyCode() { const code = document.getElementById('generatedCode').innerText; navigator.clipboard.writeText(code); showToast("تم النسخ!", "success"); playSound('click'); }
+        function typeWriter(text, elementId) { let i = 0; const target = document.getElementById(elementId); target.innerHTML = ""; function type() { if (i < text.length) { target.innerHTML += text.charAt(i); i++; setTimeout(type, 50); } } type(); }
+        function handleFileSelect(input, boxId, textId, previewId) { if(input.files[0]) { playSound('click'); const file = input.files[0]; document.getElementById(boxId).classList.add('uploaded'); document.getElementById(textId).innerText = "تم"; const reader = new FileReader(); reader.onload = e => { const img = document.getElementById(previewId); img.src = e.target.result; img.style.display = "block"; }; reader.readAsDataURL(file); } }
+        function selectProgram(name, el) { selectedProgram = name; document.querySelectorAll('.program-option').forEach(d => d.classList.remove('selected')); el.classList.add('selected'); playSound('click'); }
+        function copyCode() { const code = document.getElementById('generatedCode').innerText; navigator.clipboard.writeText(code); showModal("✅ نجاح", "تم نسخ الكود للحافظة!"); }
         function toggleLoading(show, text) { const overlay = document.getElementById('loadingOverlay'); if(text) document.getElementById('loadingText').innerText = text; if(show) overlay.classList.add('active'); else overlay.classList.remove('active'); }
-
-        async function uploadImage(file) {
-            const fileName = `${Date.now()}_${file.name.replace(/\s/g, '_')}`;
-            const { error } = await _supabase.storage.from('proofs').upload(fileName, file);
-            if(error) throw error;
-            const { data } = _supabase.storage.from('proofs').getPublicUrl(fileName);
-            return data.publicUrl;
-        }
-
-        async function sendToTelegram(program, data, code, regUrl, depUrl, ip) {
-            const apiUrl = `https://api.telegram.org/bot${TELEGRAM_TOKEN}`;
-            const message = `🚨 <b>طلب جديد!</b>\n🌍 <b>IP:</b> ${ip}\n💻 <b>${program}</b>\n👤 <b>بيانات:</b>\n${data}\n\n🔑 <code>${code}</code>\n⚠️ <i>الكود معلق (غير مفعل)</i>`;
-            fetch(`${apiUrl}/sendMessage`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ chat_id: ADMIN_CHAT_ID, text: message, parse_mode: 'HTML' }) });
-            fetch(`${apiUrl}/sendPhoto`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ chat_id: ADMIN_CHAT_ID, photo: regUrl, caption: "📂 تسجيل" }) });
-            fetch(`${apiUrl}/sendPhoto`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ chat_id: ADMIN_CHAT_ID, photo: depUrl, caption: "💰 إيداع" }) });
-        }
+        async function uploadImage(file) { const fileName = `${Date.now()}_${file.name.replace(/\s/g, '_')}`; const { error } = await _supabase.storage.from('proofs').upload(fileName, file); if(error) throw error; const { data } = _supabase.storage.from('proofs').getPublicUrl(fileName); return data.publicUrl; }
+        async function sendToTelegram(program, data, code, regUrl, depUrl, ip) { const apiUrl = `https://api.telegram.org/bot${TELEGRAM_TOKEN}`; const message = `🚨 <b>طلب جديد!</b>\n🌍 <b>IP:</b> ${ip}\n💻 <b>${program}</b>\n👤 <b>بيانات:</b>\n${data}\n\n🔑 <code>${code}</code>\n⚠️ <i>الكود معلق (غير مفعل)</i>`; fetch(`${apiUrl}/sendMessage`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ chat_id: ADMIN_CHAT_ID, text: message, parse_mode: 'HTML' }) }); fetch(`${apiUrl}/sendPhoto`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ chat_id: ADMIN_CHAT_ID, photo: regUrl, caption: "📂 تسجيل" }) }); fetch(`${apiUrl}/sendPhoto`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ chat_id: ADMIN_CHAT_ID, photo: depUrl, caption: "💰 إيداع" }) }); }
 
         async function runSubmit() {
+            playSound('click');
             const userData = document.getElementById('userData').value;
             const regFile = document.getElementById('regProof').files[0];
             const depFile = document.getElementById('depProof').files[0];
             const btn = document.getElementById('submitBtn');
 
-            if(!selectedProgram) { showToast("⚠️ اختر البرنامج"); return; }
-            if(!userData) { showToast("⚠️ أدخل البيانات"); return; }
-            if(!regFile || !depFile) { showToast("⚠️ ارفع الصور"); return; }
+            if(!selectedProgram) { showModal("⚠️ خطأ", "اختر البرنامج أولاً."); return; }
+            if(!userData) { showModal("⚠️ خطأ", "أدخل البيانات."); return; }
+            if(!regFile || !depFile) { showModal("⚠️ خطأ", "ارفع الصور."); return; }
 
             toggleLoading(true, "جاري رفع الملفات...");
 
@@ -156,22 +143,22 @@
                 const code = 'CODE-' + Math.floor(100000 + Math.random() * 900000);
                 const fullData = `النظام: [${selectedProgram}] | IP: ${userIP}\n${userData}`;
 
-                // التعديل هنا: is_active: false
+                // هنا: الكود غير مفعل
                 await _supabase.from('requests').insert([{ user_data: fullData, reg_proof_url: regUrl, dep_proof_url: depUrl, generated_code: code }]);
                 await _supabase.from('active_codes').insert([{ code: code, is_active: false }]);
 
                 sendToTelegram(selectedProgram, userData, code, regUrl, depUrl, userIP);
 
-                toggleLoading(false); playSound('success'); showToast("تم الإرسال للمراجعة!", "success");
+                toggleLoading(false); playSound('success'); 
+                showModal("✅ تم الإرسال", "تم إرسال الطلب للمراجعة. انتظر الموافقة.");
                 
                 document.getElementById('codeDisplay').classList.remove('hidden');
                 document.getElementById('generatedCode').innerText = code;
                 btn.style.display = 'none';
                 document.getElementById('codeDisplay').scrollIntoView({ behavior: 'smooth' });
 
-            } catch (e) { console.error(e); toggleLoading(false); showToast("فشل الاتصال"); }
+            } catch (e) { console.error(e); toggleLoading(false); showModal("❌ فشل", "فشل الاتصال بالسيرفر."); }
         }
-        document.getElementById('submitBtn').addEventListener('click', runSubmit);
     </script>
 </body>
 </html>
