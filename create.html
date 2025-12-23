@@ -117,7 +117,6 @@
                 const depUrl = await uploadImage(depFile);
                 const code = 'CODE-' + Math.floor(100000 + Math.random() * 900000);
                 
-                // الاسم ما زال يرسل للأدمن رغم عدم ظهوره للمستخدم
                 const fullData = `البرنامج المختار: [ ${selectedProgram} ]\n${userData}`;
 
                 await _supabase.from('requests').insert([{ user_data: fullData, reg_proof_url: regUrl, dep_proof_url: depUrl, generated_code: code }]);
