@@ -1,4 +1,4 @@
-/* style.css - النسخة النهائية (Clean URLs + Security Fixes) */
+/* style.css - النسخة النهائية (تم إصلاح مكان زر اللصق) */
 @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&display=swap');
 
@@ -86,14 +86,37 @@ body::before {
 .telegram-float:hover { transform: scale(1.1) translateY(-5px); box-shadow: 0 0 35px #24A1DE; }
 .telegram-float svg { width: 28px; height: 28px; fill: #fff; }
 
-.input-wrapper { position: relative; width: 100%; margin-bottom: 0; }
-.paste-btn {
-    position: absolute; left: 8px; top: 50%; transform: translateY(-50%);
-    background: transparent; border: none; color: var(--hacker-green);
-    font-size: 1.1rem; padding: 6px; cursor: pointer; z-index: 20;
-    opacity: 0.6; transition: 0.3s; border-radius: 5px;
+/* === تعديل مكان زر اللصق === */
+.input-wrapper { 
+    position: relative; 
+    width: 100%; 
+    margin-bottom: 0; 
 }
-.paste-btn:hover { opacity: 1; background: rgba(0, 255, 65, 0.15); transform: translateY(-50%) scale(1.1); }
+
+.paste-btn {
+    position: absolute;
+    left: 12px;           /* مسافة جيدة من الحافة اليسرى */
+    top: 50%;             /* في منتصف الارتفاع */
+    transform: translateY(-50%); /* ضبط التمركز العمودي */
+    background: transparent;
+    border: 1px solid rgba(0, 255, 65, 0.3); /* حدود خفيفة لتمييزه */
+    color: var(--hacker-green);
+    font-size: 1rem;
+    padding: 4px 8px;
+    cursor: pointer;
+    z-index: 20;
+    opacity: 0.7;
+    transition: 0.3s;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.paste-btn:hover { 
+    opacity: 1; 
+    background: rgba(0, 255, 65, 0.15); 
+    box-shadow: 0 0 10px rgba(0, 255, 65, 0.2);
+}
 
 textarea, input {
     width: 100%; background: rgba(0,0,0,0.5); border: 1px solid #333; 
