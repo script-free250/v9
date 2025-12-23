@@ -11,8 +11,7 @@
         <h2>تسجيل الدخول</h2>
         <input type="text" id="accessCode" placeholder="أدخل كود التشغيل">
         
-        <button onclick="login()">دخول</button>
-        
+        <button id="loginBtn">دخول</button>
         <button class="secondary-btn" onclick="window.location.href='create.html'">إنشاء كود مجاني</button>
         
         <p style="margin-top: 20px; font-size: 12px;">
@@ -22,6 +21,64 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
-    <script src="script.js"></script>
+    <script>
+        // 1. إعدادات Supabase
+        const SUPABASE_URL = 'https://zflgifemhopabfzgczgs.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_9xZcd3BkgL6cEQwHJitrew_mbX74lJW';
+        
+        // التأكد من تحميل المكتبة
+        if (typeof supabase === 'undefined') {
+            alert('خطأ: مكتبة Supabase لم يتم تحميلها. تأكد من الإنترنت.');
+        } else {
+            // إنشاء العميل
+            var _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        }
+
+        // 2. دالة تسجيل الدخول
+        async function runLogin() {
+            const codeInput = document.getElementById('accessCode').value.trim();
+            const btn = document.getElementById('loginBtn');
+            
+            if (!codeInput) {
+                alert("الرجاء كتابة الكود");
+                return;
+            }
+
+            btn.innerText = "جاري التحقق...";
+            btn.disabled = true;
+
+            try {
+                // البحث في قاعدة البيانات
+                const { data, error } = await _supabase
+                    .from('active_codes')
+                    .select('*')
+                    .eq('code', codeInput);
+
+                if (error) {
+                    console.error('Supabase Error:', error);
+                    alert("خطأ في الاتصال بقاعدة البيانات");
+                    btn.innerText = "دخول";
+                    btn.disabled = false;
+                } 
+                else if (data && data.length > 0) {
+                    // نجاح
+                    localStorage.setItem('isLoggedIn', 'true');
+                    window.location.href = 'app.html';
+                } else {
+                    alert("الكود غير صحيح");
+                    btn.innerText = "دخول";
+                    btn.disabled = false;
+                }
+            } catch (err) {
+                console.error(err);
+                alert("حدث خطأ غير متوقع: " + err.message);
+                btn.innerText = "دخول";
+                btn.disabled = false;
+            }
+        }
+
+        // ربط الزر بالدالة يدوياً لضمان العمل
+        document.getElementById('loginBtn').addEventListener('click', runLogin);
+    </script>
 </body>
 </html>
