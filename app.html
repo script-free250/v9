@@ -3,58 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ANALYSIS_UNIT</title>
+    <title>وحدة التحليل</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h2 style="margin: 0; border: none;">ANALYSIS_UNIT</h2>
-            <div style="font-size: 12px; color: var(--hacker-green);">ONLINE ●</div>
+            <h2 style="margin: 0; border: none; font-size: 1.5rem;">نظام التحليل</h2>
+            <div style="font-size: 12px; color: var(--hacker-green); font-weight: bold;">متصل ●</div>
         </div>
 
-        <p style="color: var(--hacker-cyan);">FETCHING_DATA_STREAM...</p>
+        <p style="color: #666;">جاري سحب البيانات...</p>
 
         <div class="monitor-screen">
-            <div style="font-size: 0.8rem; color: #555; text-align: left; direction: ltr;">TARGET_VALUE</div>
+            <div style="font-size: 0.8rem; color: #555; text-align: left; direction: ltr;">TARGET_SIGNAL</div>
             <div class="big-number" id="randomNumber">--.--</div>
             
             <div class="progress-bar">
                 <div class="progress-fill" id="progressFill"></div>
             </div>
-            <div style="text-align: right; font-size: 0.7rem; color: #555; margin-top: 5px;">REFRESH_RATE: 7s</div>
+            <div style="text-align: right; font-size: 0.7rem; color: #555; margin-top: 5px;">تحديث: 7s</div>
         </div>
 
-        <button class="secondary-btn" onclick="logout()" data-text="TERMINATE_SESSION">TERMINATE_SESSION</button>
+        <button class="secondary-btn" onclick="logout()">إغلاق الجلسة</button>
     </div>
 
     <script>
-        if (!localStorage.getItem('isLoggedIn')) {
-            window.location.href = 'index.html';
-        }
+        if (!localStorage.getItem('isLoggedIn')) window.location.href = 'index.html';
 
         const display = document.getElementById('randomNumber');
-        const progressBar = document.getElementById('progressFill');
-        const UPDATE_INTERVAL = 7000;
-        let startTime = Date.now();
+        const bar = document.getElementById('progressFill');
+        const INTERVAL = 7000;
+        let start = Date.now();
 
-        function generateNumber() {
-            let num = (Math.random() * 29 + 1).toFixed(2);
+        function gen() {
+            let n = (Math.random() * 29 + 1).toFixed(2);
             display.style.opacity = 0;
-            setTimeout(() => {
-                display.innerText = num;
-                display.style.opacity = 1;
-            }, 100);
-            startTime = Date.now();
+            setTimeout(() => { display.innerText = n; display.style.opacity = 1; }, 100);
+            start = Date.now();
         }
 
-        function updateProgress() {
-            const elapsed = Date.now() - startTime;
-            const remaining = UPDATE_INTERVAL - elapsed;
-            const percentage = (remaining / UPDATE_INTERVAL) * 100;
-            if (remaining <= 0) { generateNumber(); } 
-            else { progressBar.style.width = percentage + "%"; }
-            requestAnimationFrame(updateProgress);
+        function loop() {
+            let elapsed = Date.now() - start;
+            let remain = INTERVAL - elapsed;
+            if(remain <= 0) gen();
+            else bar.style.width = ((remain/INTERVAL)*100) + "%";
+            requestAnimationFrame(loop);
         }
 
         function logout() {
@@ -62,8 +56,8 @@
             window.location.href = 'index.html';
         }
 
-        generateNumber();
-        requestAnimationFrame(updateProgress);
+        gen();
+        requestAnimationFrame(loop);
     </script>
 </body>
 </html>
