@@ -3,33 +3,80 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مولد الأرقام</title>
+    <title>وحدة التوليد</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
-        <h2>نظام التوليد العشوائي</h2>
-        <div class="result-box" id="randomNumber">0.00</div>
-        <button onclick="generateRandom()">توليد رقم</button>
-        <button class="secondary-btn" onclick="logout()">خروج</button>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2 style="margin: 0; border: none;">وحدة التحليل</h2>
+            <div style="font-size: 12px; color: var(--accent-green);">ONLINE ●</div>
+        </div>
+
+        <p style="color: var(--text-dim);">جاري تحليل البيانات واستخراج النتائج...</p>
+
+        <div class="monitor-screen">
+            <div style="font-size: 0.8rem; color: #555; text-align: left; direction: ltr;">TARGET_VALUE</div>
+            <div class="big-number" id="randomNumber">--.--</div>
+            
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div style="text-align: right; font-size: 0.7rem; color: #555; margin-top: 5px;">تحديث تلقائي: 7s</div>
+        </div>
+
+        <button class="secondary-btn" onclick="logout()">إنهاء الجلسة</button>
     </div>
 
     <script>
-        // التحقق من الجلسة
+        // التحقق من الدخول
         if (!localStorage.getItem('isLoggedIn')) {
             window.location.href = 'index.html';
         }
 
-        function generateRandom() {
-            // توليد رقم بين 1.00 و 30.00
+        const display = document.getElementById('randomNumber');
+        const progressBar = document.getElementById('progressFill');
+        const UPDATE_INTERVAL = 7000; // 7 ثواني
+        let startTime = Date.now();
+
+        function generateNumber() {
+            // توليد رقم عشوائي من 1.00 إلى 30.00
             let num = (Math.random() * 29 + 1).toFixed(2);
-            document.getElementById('randomNumber').innerText = num;
+            
+            // تأثير وميض بسيط عند تغيير الرقم
+            display.style.opacity = 0;
+            setTimeout(() => {
+                display.innerText = num;
+                display.style.opacity = 1;
+            }, 100);
+
+            // إعادة ضبط الوقت
+            startTime = Date.now();
+        }
+
+        function updateProgress() {
+            const elapsed = Date.now() - startTime;
+            const remaining = UPDATE_INTERVAL - elapsed;
+            const percentage = (remaining / UPDATE_INTERVAL) * 100;
+
+            if (remaining <= 0) {
+                generateNumber(); // توليد رقم جديد
+            } else {
+                progressBar.style.width = percentage + "%";
+            }
+            
+            requestAnimationFrame(updateProgress); // تكرار الدالة بنعومة
         }
 
         function logout() {
             localStorage.removeItem('isLoggedIn');
             window.location.href = 'index.html';
         }
+
+        // تشغيل فوري عند فتح الصفحة
+        generateNumber();
+        requestAnimationFrame(updateProgress);
+
     </script>
 </body>
 </html>
