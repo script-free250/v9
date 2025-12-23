@@ -10,7 +10,9 @@
     <div class="container">
         <h2>نظام الوصول المؤمن</h2>
         <p style="color: #888; margin-bottom: 20px;">>> أدخل مفتاح الوصول للمتابعة...</p>
+        
         <input type="text" id="accessCode" placeholder="XX-XXXX-XX" style="text-align: center; font-weight: bold; font-family:'Fira Code'; letter-spacing:2px;">
+        
         <button id="loginBtn">بدء الاتصال</button>
         <button class="secondary-btn" onclick="window.location.href='create.html'" style="width:100%; border-radius:4px;">طلب مفتاح جديد</button>
     </div>
@@ -21,38 +23,62 @@
         const SUPABASE_KEY = 'sb_publishable_9xZcd3BkgL6cEQwHJitrew_mbX74lJW';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+        // فحص الحظر (نفس الكود السابق)
         async function checkBan() {
             try {
                 const res = await fetch('https://api.ipify.org?format=json');
                 const data = await res.json();
                 const { data: banned } = await _supabase.from('banned_ips').select('*').eq('ip', data.ip);
-                if (banned && banned.length > 0) { document.body.innerHTML = `<h1 style="color:red; text-align:center; margin-top:20%;">🚫 BLOCKED</h1>`; document.body.style.display='block'; }
-                else { document.body.style.display = 'flex'; }
+                
+                if (banned && banned.length > 0) {
+                    document.body.innerHTML = `<h1 style="color:red; text-align:center; margin-top:20%;">🚫 BLOCKED</h1>`;
+                    document.body.style.display = 'block';
+                } else {
+                    document.body.style.display = 'flex';
+                }
             } catch (e) { document.body.style.display = 'flex'; }
         }
         window.onload = checkBan;
 
+        // --- دالة الدخول المصححة ---
         async function runLogin() {
             const codeInput = document.getElementById('accessCode').value.trim();
             const btn = document.getElementById('loginBtn');
+            
             if (!codeInput) { alert("أدخل الكود!"); return; }
-            btn.innerText = "جاري التحقق..."; btn.disabled = true;
+
+            btn.innerText = "جاري التحقق...";
+            btn.disabled = true;
 
             try {
-                const { data } = await _supabase.from('active_codes').select('*').eq('code', codeInput).single();
+                // البحث عن الكود في قاعدة البيانات
+                const { data, error } = await _supabase
+                    .from('active_codes')
+                    .select('*')
+                    .eq('code', codeInput)
+                    .single(); // جلب نتيجة واحدة فقط
 
-                if (!data) {
+                if (error || !data) {
+                    // الحالة 1: الكود غير موجود
                     alert("❌ الكود غير صحيح!");
-                } else if (data.is_active === true) {
-                    // الكود مفعل
-                    localStorage.setItem('isLoggedIn', 'true');
-                    window.location.href = 'app.html';
                 } else {
-                    // الكود موجود لكنه معلق
-                    alert("⏳ هذا الكود قيد المراجعة.\nيرجى الانتظار حتى يوافق الأدمن.");
+                    // الحالة 2: الكود موجود، نفحص التفعيل
+                    if (data.is_active === true) {
+                        // مسموح بالدخول
+                        localStorage.setItem('isLoggedIn', 'true');
+                        window.location.href = 'app.html';
+                    } else {
+                        // الكود موجود لكن is_active = false
+                        alert("⏳ الكود صحيح، لكنه قيد المراجعة.\n\nيرجى الانتظار حتى يوافق الأدمن على طلبك.");
+                    }
                 }
-            } catch (err) { alert("خطأ في الاتصال"); } 
-            finally { btn.innerText = "بدء الاتصال"; btn.disabled = false; }
+            } catch (err) {
+                console.error(err);
+                alert("خطأ في الاتصال بالسيرفر");
+            } finally {
+                btn.innerText = "بدء الاتصال";
+                btn.disabled = false;
+            }
         }
         document.getElementById('loginBtn').addEventListener('click', runLogin);
     </script>
