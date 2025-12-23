@@ -18,111 +18,65 @@
 
         <div id="adminPanel" class="hidden">
             <div class="stats-grid">
-                <div class="stat-card">
-                    <span class="stat-number" id="totalCount">0</span>
-                    <span class="stat-label">إجمالي الطلبات</span>
-                </div>
-                <div class="stat-card">
-                    <span class="stat-number" id="todayCount">0</span>
-                    <span class="stat-label">طلبات اليوم</span>
-                </div>
-                <div class="stat-card" style="border-color: var(--danger-red);">
-                    <span class="stat-number" id="bannedCount" style="color:var(--danger-red);">0</span>
-                    <span class="stat-label">المحظورين</span>
-                </div>
+                <div class="stat-card"><span class="stat-number" id="totalCount">0</span><span class="stat-label">إجمالي</span></div>
+                <div class="stat-card"><span class="stat-number" id="todayCount">0</span><span class="stat-label">اليوم</span></div>
+                <div class="stat-card" style="border-color: var(--danger-red);"><span class="stat-number" id="bannedCount" style="color:var(--danger-red);">0</span><span class="stat-label">محظورين</span></div>
             </div>
 
             <div style="display:flex; justify-content:space-between; margin-bottom:20px; border-bottom:1px solid #333; padding-bottom:15px;">
                 <h3 style="margin:0; color:#fff;">سجل العمليات الحية</h3>
                 <button onclick="playSound('click'); loadData()" style="width:auto; margin:0; font-size:0.9rem; background:transparent; border:1px solid #555; color:#fff;">تحديث ↻</button>
             </div>
-            
             <div id="requestsList" style="text-align: right;">جاري الاتصال...</div>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        // إعدادات الصوت (للتوحيد)
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        function playSound(type) {
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-            const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
-            osc.connect(gain); gain.connect(audioCtx.destination);
-            if (type === 'click') { osc.type = 'sine'; osc.frequency.setValueAtTime(800, audioCtx.currentTime); gain.gain.setValueAtTime(0.1, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.05); }
-        }
-
-        // تأثير الكتابة
-        function typeWriter(text, elementId) {
-            let i = 0; const target = document.getElementById(elementId); target.innerHTML = "";
-            function type() { if (i < text.length) { target.innerHTML += text.charAt(i); i++; setTimeout(type, 50); } }
-            type();
-        }
+        function playSound(type) { if (audioCtx.state === 'suspended') audioCtx.resume(); const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain(); osc.connect(gain); gain.connect(audioCtx.destination); if (type === 'click') { osc.type = 'sine'; osc.frequency.setValueAtTime(800, audioCtx.currentTime); gain.gain.setValueAtTime(0.1, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.05); } }
+        function typeWriter(text, elementId) { let i = 0; const target = document.getElementById(elementId); target.innerHTML = ""; function type() { if (i < text.length) { target.innerHTML += text.charAt(i); i++; setTimeout(type, 50); } } type(); }
         window.onload = () => typeWriter("دخول المشرف (ROOT)", "typewriterTitle");
 
         const SUPABASE_URL = 'https://zflgifemhopabfzgczgs.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_9xZcd3BkgL6cEQwHJitrew_mbX74lJW';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // تسجيل الدخول
         document.getElementById('authBtn').addEventListener('click', () => {
-            const e = document.getElementById('adminEmail').value;
-            const p = document.getElementById('adminPass').value;
-            if(e === "mm@mm.mm" && p === "mm023123") {
-                document.getElementById('adminLogin').classList.add('hidden');
-                document.getElementById('adminPanel').classList.remove('hidden');
-                loadData();
-            } else { alert("بيانات خاطئة!"); }
+            const e = document.getElementById('adminEmail').value; const p = document.getElementById('adminPass').value;
+            if(e === "mm@mm.mm" && p === "mm023123") { document.getElementById('adminLogin').classList.add('hidden'); document.getElementById('adminPanel').classList.remove('hidden'); loadData(); } else { alert("بيانات خاطئة!"); }
         });
 
-        // [16] دالة الحظر
-        async function banUser(ip) {
-            if(!confirm(`هل أنت متأكد من حظر العنوان IP: ${ip}؟\nلن يتمكن من دخول الموقع مجدداً!`)) return;
-            playSound('click');
-            const { error } = await _supabase.from('banned_ips').insert([{ ip: ip }]);
-            if(error) { alert("خطأ: ربما هذا الـ IP محظور بالفعل."); }
-            else { alert("تم حظر المستخدم بنجاح! 🚫"); loadData(); }
+        // زر التفعيل الجديد
+        async function activateCode(code) {
+            if(!confirm("تفعيل هذا الكود؟")) return;
+            const { error } = await _supabase.from('active_codes').update({ is_active: true }).eq('code', code);
+            if(error) alert("خطأ!"); else { alert("تم التفعيل ✅"); }
         }
 
-        // دالة الحذف
-        async function deleteRequest(id) {
-            if(!confirm("حذف هذا السجل نهائياً؟")) return;
-            playSound('click');
-            await _supabase.from('requests').delete().eq('id', id);
-            loadData();
-        }
+        async function banUser(ip) { if(!confirm(`حظر ${ip}؟`)) return; const { error } = await _supabase.from('banned_ips').insert([{ ip: ip }]); if(error) alert("خطأ!"); else { alert("تم الحظر 🚫"); loadData(); } }
+        async function deleteRequest(id) { if(!confirm("حذف؟")) return; await _supabase.from('requests').delete().eq('id', id); loadData(); }
 
         async function loadData() {
-            const list = document.getElementById('requestsList');
-            list.innerHTML = 'جاري سحب البيانات...';
-
-            // جلب البيانات
+            const list = document.getElementById('requestsList'); list.innerHTML = 'جاري التحميل...';
             const { data: requests } = await _supabase.from('requests').select('*').order('created_at', {ascending:false});
             const { count: bannedCount } = await _supabase.from('banned_ips').select('*', { count: 'exact', head: true });
 
             if(requests) {
-                // [15] تحديث العدادات
                 document.getElementById('totalCount').innerText = requests.length;
                 document.getElementById('bannedCount').innerText = bannedCount || 0;
-                
                 const today = new Date().toISOString().split('T')[0];
-                const todayReqs = requests.filter(r => r.created_at.startsWith(today)).length;
-                document.getElementById('todayCount').innerText = todayReqs;
+                document.getElementById('todayCount').innerText = requests.filter(r => r.created_at.startsWith(today)).length;
 
-                // عرض القائمة
                 list.innerHTML = '';
                 requests.forEach(r => {
                     const ipMatch = r.user_data.match(/IP: ([\d\.]+)/);
                     const userIP = ipMatch ? ipMatch[1] : 'Unknown';
                     const d = new Date(r.created_at).toLocaleString('ar-EG');
-                    
                     const div = document.createElement('div');
                     div.style.cssText = "background:#050505; border:1px solid #333; padding:20px; margin-bottom:15px; border-right: 4px solid #0f0;";
                     div.innerHTML = `
-                        <div style="color:#666; font-size:0.8rem; margin-bottom:10px; font-family:'Fira Code'; display:flex; justify-content:space-between;">
-                            <span>${d}</span>
-                            <span style="color:#fff;">IP: ${userIP}</span>
-                        </div>
+                        <div style="color:#666; font-size:0.8rem; margin-bottom:10px; font-family:'Fira Code'; display:flex; justify-content:space-between;"><span>${d}</span><span style="color:#fff;">IP: ${userIP}</span></div>
                         <div style="background:#111; padding:15px; white-space:pre-wrap; color:#fff; margin-bottom:10px;">${r.user_data}</div>
                         <p>الكود: <span style="color:#0f0; font-weight:bold; font-family:'Fira Code'; font-size:1.2rem;">${r.generated_code}</span></p>
                         <div style="display:flex; gap:10px; margin-top:15px; flex-wrap:wrap;">
@@ -130,7 +84,8 @@
                             <a href="${r.dep_proof_url}" target="_blank"><img src="${r.dep_proof_url}" height="60" style="border:1px solid #555"></a>
                         </div>
                         <div style="margin-top:15px; border-top:1px dashed #333; padding-top:10px;">
-                            <button class="action-btn ban-btn" onclick="banUser('${userIP}')">🚫 حظر IP</button>
+                            <button class="action-btn activate-btn" onclick="activateCode('${r.generated_code}')">✅ تفعيل</button>
+                            <button class="action-btn ban-btn" onclick="banUser('${userIP}')">🚫 حظر</button>
                             <button class="action-btn delete-btn" onclick="deleteRequest(${r.id})">🗑️ حذف</button>
                         </div>
                     `;
