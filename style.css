@@ -1,4 +1,4 @@
-/* style.css - Final Hacker Theme (Images Only Selection) */
+/* style.css - Full Image Buttons */
 @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&display=swap');
 
@@ -49,54 +49,64 @@ label.title {
     color: var(--hacker-green); font-size: 0.9rem; font-weight: bold;
 }
 
-/* === خيارات البرامج (صور فقط) === */
+/* === خيارات البرامج (صورة تملأ المربع) === */
 .program-grid {
     display: flex; justify-content: center; gap: 20px; margin-bottom: 25px;
 }
 
 .program-option {
     border: 2px solid #333;
-    background: rgba(0,0,0,0.3);
-    padding: 20px; /* زيادة الحشوة */
+    background: #000;
+    padding: 0; /* هام جداً: إزالة المسافات الداخلية */
     border-radius: 12px;
     cursor: pointer; transition: 0.3s;
-    width: 120px; /* جعل المربع أقرب للمربع */
-    height: 120px;
+    width: 110px;  /* حجم المربع */
+    height: 110px; /* حجم المربع */
     position: relative;
-    display: flex; justify-content: center; align-items: center; /* توسيط الصورة */
+    overflow: hidden; /* لضمان عدم خروج الصورة عن الحواف */
+    display: flex; justify-content: center; align-items: center;
 }
 
 .program-option:hover {
     border-color: #fff;
-    background: rgba(255,255,255,0.05);
-}
-.program-option:hover .program-icon {
-    transform: scale(1.1); /* تكبير الصورة عند المرور */
+    box-shadow: 0 0 15px rgba(255,255,255,0.2);
 }
 
 .program-option.selected {
     border-color: var(--hacker-green);
-    background: rgba(0, 255, 0, 0.1);
     box-shadow: 0 0 20px var(--hacker-green);
 }
 
+/* علامة الصح */
 .program-option.selected::after {
-    content: "✔"; position: absolute; top: -12px; right: -12px;
+    content: "✔"; position: absolute; top: 5px; right: 5px; /* مكان العلامة */
     background: var(--hacker-green); color: #000;
-    width: 30px; height: 30px; border-radius: 50%;
-    display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 1.2rem;
-    box-shadow: 0 0 10px var(--hacker-green);
+    width: 25px; height: 25px; border-radius: 50%;
+    display: flex; justify-content: center; align-items: center; 
+    font-weight: bold; font-size: 1rem;
+    box-shadow: 0 0 5px #000;
+    z-index: 2; /* لتظهر فوق الصورة */
 }
 
 .program-icon {
-    width: 80px; height: 80px; /* تكبير الأيقونة */
-    object-fit: contain;
-    /* تم إزالة الهامش السفلي */
-    filter: drop-shadow(0 0 5px var(--hacker-green));
+    width: 100%;  /* عرض كامل */
+    height: 100%; /* طول كامل */
+    object-fit: cover; /* تغطية المساحة بالكامل (يقص الزوائد) */
+    /* إذا كنت تريد الصورة كاملة بدون قص استخدم contain بدل cover */
     transition: 0.3s;
+    filter: grayscale(0.5); /* تأثير رمادي خفيف */
 }
 
-/* المدخلات */
+.program-option:hover .program-icon {
+    transform: scale(1.05); /* زووم بسيط عند المرور */
+    filter: grayscale(0); /* تلوين كامل عند المرور */
+}
+.program-option.selected .program-icon {
+    filter: grayscale(0);
+}
+
+
+/* باقي العناصر كما هي */
 textarea, input[type="text"] {
     width: 100%; background: #000;
     border: 1px solid #333; border-right: 3px solid var(--hacker-green);
@@ -105,7 +115,6 @@ textarea, input[type="text"] {
 }
 textarea:focus { border-color: var(--hacker-green); box-shadow: 0 0 10px rgba(0,255,0,0.2); }
 
-/* رفع الملفات */
 .upload-box {
     border: 2px dashed #444; background: rgba(0, 255, 0, 0.02);
     padding: 15px; cursor: pointer; color: #888; margin-bottom: 10px;
@@ -115,7 +124,6 @@ textarea:focus { border-color: var(--hacker-green); box-shadow: 0 0 10px rgba(0,
 .upload-box:hover { border-color: var(--hacker-green); color: var(--hacker-green); }
 .upload-box.uploaded { border-style: solid; border-color: var(--hacker-green); color: var(--hacker-green); background: rgba(0,255,0,0.1); }
 
-/* الأزرار */
 button {
     width: 100%; padding: 15px; margin-top: 20px;
     border: 2px solid var(--hacker-green); background: transparent;
@@ -127,7 +135,6 @@ button:hover { background: var(--hacker-green); color: #000; box-shadow: 0 0 20p
 .secondary-btn { border-color: #555; color: #777; }
 .secondary-btn:hover { border-color: var(--hacker-green); color: var(--hacker-green); background: transparent; }
 
-/* شاشة التطبيق */
 .monitor-screen {
     background: #000; border: 2px solid #333; padding: 20px;
     margin: 20px 0; border-radius: 5px;
@@ -139,7 +146,6 @@ button:hover { background: var(--hacker-green); color: #000; box-shadow: 0 0 20p
 .progress-bar { width: 100%; height: 5px; background: #222; margin-top: 15px; }
 .progress-fill { height: 100%; background: var(--hacker-green); width: 100%; transition: width 0.1s linear; }
 
-/* التنبيهات */
 .custom-toast {
     position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
     background: #000; border: 1px solid var(--hacker-green);
