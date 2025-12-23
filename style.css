@@ -1,4 +1,4 @@
-/* style.css - النسخة الكاملة مع التعديلات الجديدة */
+/* style.css - النسخة النهائية الكاملة */
 @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&display=swap');
 
@@ -31,7 +31,7 @@ body {
 
 @keyframes matrixMove { 0% { background-position: 0 0; } 100% { background-position: 50px 50px; } }
 
-/* تأثير اهتزاز الشاشة */
+/* تأثير اهتزاز الشاشة عند الخطأ */
 @keyframes shake {
     0% { transform: translate(1px, 1px) rotate(0deg); }
     10% { transform: translate(-1px, -2px) rotate(-1deg); }
@@ -45,7 +45,6 @@ body {
     90% { transform: translate(1px, 2px) rotate(0deg); }
     100% { transform: translate(1px, -2px) rotate(-1deg); }
 }
-
 .shake-element { animation: shake 0.5s; animation-iteration-count: 1; }
 
 body::before {
@@ -94,14 +93,30 @@ body::before {
 }
 .telegram-float:hover { transform: scale(1.1); box-shadow: 0 0 25px #0088cc; }
 
-/* زر اللصق (Paste) */
-.input-wrapper { position: relative; width: 100%; }
+/* === [تعديل] زر اللصق الصغير === */
+.input-wrapper { position: relative; width: 100%; margin-bottom: 0; }
+
 .paste-btn {
-    position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
-    background: transparent; border: none; color: var(--hacker-green);
-    font-size: 1.2rem; cursor: pointer; padding: 5px; z-index: 10;
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    color: var(--hacker-green);
+    font-size: 14px;
+    padding: 5px;
+    cursor: pointer;
+    z-index: 10;
+    opacity: 0.5;
+    transition: all 0.2s ease;
+    border-radius: 4px;
 }
-.paste-btn:hover { text-shadow: 0 0 10px var(--hacker-green); }
+.paste-btn:hover {
+    opacity: 1;
+    background: rgba(0, 255, 0, 0.1);
+    transform: translateY(-50%) scale(1.1);
+}
 
 /* Tooltips */
 [data-tooltip]:hover::after {
