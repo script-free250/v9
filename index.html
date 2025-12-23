@@ -7,25 +7,12 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body style="display:none;" id="bodyContent">
-    <div id="faqModal" class="modal-overlay">
+    <div id="loginModal" class="modal-overlay">
         <div class="modal-box">
-            <div class="modal-title">الأسئلة الشائعة [FAQ]</div>
-            <div class="faq-item" onclick="this.classList.toggle('active')">
-                <div class="faq-q">> كيف أحصل على الكود؟</div>
-                <div class="faq-a">سجل حساباً جديداً بالبرومو كود الخاص بنا، ثم قدم طلب تفعيل.</div>
-            </div>
-            <div class="faq-item" onclick="this.classList.toggle('active')">
-                <div class="faq-q">> كم مدة التفعيل؟</div>
-                <div class="faq-a">يتم التفعيل يدوياً خلال 10-30 دقيقة.</div>
-            </div>
-            <div class="modal-actions"><button class="modal-btn" onclick="document.getElementById('faqModal').classList.remove('active')">إغلاق</button></div>
+            <div class="modal-title" id="modalTitle">[ SYSTEM_ALERT ]</div>
+            <div class="modal-msg" id="modalMsg">...</div>
+            <div class="modal-actions"><button class="modal-btn" onclick="closeModal()">موافق</button></div>
         </div>
-    </div>
-    
-    <div id="loginModal" class="modal-overlay"><div class="modal-box"><div class="modal-title" id="modalTitle"></div><div class="modal-msg" id="modalMsg"></div><div class="modal-actions"><button class="modal-btn" onclick="document.getElementById('loginModal').classList.remove('active')">موافق</button></div></div></div>
-
-    <div style="position:fixed; top:20px; left:20px; color:#0f0; font-family:'Fira Code'; font-size:0.8rem; border:1px solid #0f0; padding:5px;">
-        Live Users: <span id="liveCount">142</span>
     </div>
 
     <div class="container">
@@ -34,21 +21,20 @@
         <input type="text" id="accessCode" placeholder="XX-XXXX-XX" style="text-align: center; font-weight: bold; font-family:'Fira Code'; letter-spacing:2px;">
         <button id="loginBtn">بدء الاتصال</button>
         <button class="secondary-btn" onclick="window.location.href='create.html'" style="width:100%; border-radius:4px;">طلب مفتاح جديد</button>
-        <button class="secondary-btn" onclick="document.getElementById('faqModal').classList.add('active')" style="width:100%; border:none; color:#666; font-size:0.8rem;">[27] الأسئلة الشائعة</button>
     </div>
-
-    <a href="https://t.me/YOUR_CHANNEL" target="_blank" class="telegram-float"><svg class="telegram-icon" viewBox="0 0 24 24"><path d="M20.665 3.717l-17.73 6.837c-1.21.486-1.203 1.161-.222 1.462l4.552 1.42 10.532-6.645c.498-.303.953-.14.579.192l-8.533 7.701h-.002l.002.001-.314 4.692c.46 0 .663-.211.921-.46l2.211-2.15 4.599 3.397c.848.467 1.457.227 1.668-.785l3.019-14.228c.309-1.239-.473-1.8-1.282-1.434z"/></svg></a>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        function showModal(t, m) { document.getElementById('modalTitle').innerText = t; document.getElementById('modalMsg').innerText = m; document.getElementById('loginModal').classList.add('active'); }
+        function showModal(title, msg) { document.getElementById('modalTitle').innerText = title; document.getElementById('modalMsg').innerText = msg; document.getElementById('loginModal').classList.add('active'); }
+        function closeModal() { document.getElementById('loginModal').classList.remove('active'); }
         const SUPABASE_URL = 'https://zflgifemhopabfzgczgs.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_9xZcd3BkgL6cEQwHJitrew_mbX74lJW';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         async function checkBan() {
             try {
-                const res = await fetch('https://api.ipify.org?format=json'); const data = await res.json();
+                const res = await fetch('https://api.ipify.org?format=json');
+                const data = await res.json();
                 const { data: banned } = await _supabase.from('banned_ips').select('*').eq('ip', data.ip);
                 if (banned && banned.length > 0) { document.body.innerHTML = `<h1 style="color:red; text-align:center; margin-top:20%;">🚫 BLOCKED</h1>`; document.body.style.display='block'; }
                 else { document.body.style.display = 'flex'; }
@@ -56,24 +42,21 @@
         }
         window.onload = checkBan;
 
-        // [9] Fake Counter Animation
-        setInterval(() => {
-            let current = parseInt(document.getElementById('liveCount').innerText);
-            let change = Math.floor(Math.random() * 5) - 2;
-            document.getElementById('liveCount').innerText = current + change;
-        }, 3000);
-
         async function runLogin() {
             const codeInput = document.getElementById('accessCode').value.trim();
             const btn = document.getElementById('loginBtn');
-            if (!codeInput) { showModal("تنبيه", "أدخل الكود."); return; }
+            if (!codeInput) { showModal("تنبيه", "أدخل الكود أولاً."); return; }
             btn.innerText = "جاري التحقق..."; btn.disabled = true;
 
             try {
                 const { data } = await _supabase.from('active_codes').select('*').eq('code', codeInput).single();
-                if (!data) { showModal("❌ خطأ", "الكود غير صحيح!"); }
-                else if (data.is_active === true) { localStorage.setItem('isLoggedIn', 'true'); window.location.href = 'app.html'; }
-                else { showModal("⏳ قيد الانتظار", "الكود بانتظار موافقة الأدمن."); }
+                if (!data) {
+                    showModal("❌ خطأ", "الكود غير صحيح!");
+                } else if (data.is_active === true) {
+                    localStorage.setItem('isLoggedIn', 'true'); window.location.href = 'app.html';
+                } else {
+                    showModal("⏳ قيد الانتظار", "هذا الكود صحيح ولكنه بانتظار موافقة الأدمن.");
+                }
             } catch (err) { showModal("⚠️ خطأ", "فشل الاتصال."); } 
             finally { btn.innerText = "بدء الاتصال"; btn.disabled = false; }
         }
