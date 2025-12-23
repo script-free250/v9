@@ -15,7 +15,7 @@
             <h2>دخول المشرف</h2>
             <input type="email" id="adminEmail" placeholder="البريد الإلكتروني">
             <input type="password" id="adminPass" placeholder="كلمة المرور">
-            <button onclick="adminAuth()">دخول</button>
+            <button id="adminLoginBtn">دخول</button>
         </div>
 
         <div id="adminPanel" class="hidden">
@@ -30,6 +30,69 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="script.js"></script>
+    
+    <script>
+        const SUPABASE_URL = 'https://zflgifemhopabfzgczgs.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_9xZcd3BkgL6cEQwHJitrew_mbX74lJW';
+        
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // دالة دخول الأدمن
+        function runAdminLogin() {
+            const email = document.getElementById('adminEmail').value;
+            const pass = document.getElementById('adminPass').value;
+
+            if (email === "mazen@admin.com" && pass === "mazen250999") {
+                document.getElementById('adminLogin').classList.add('hidden');
+                document.getElementById('adminPanel').classList.remove('hidden');
+                loadRequests();
+            } else {
+                alert("بيانات خاطئة");
+            }
+        }
+
+        // دالة تحميل الطلبات
+        async function loadRequests() {
+            const list = document.getElementById('requestsList');
+            list.innerHTML = 'جاري التحميل...';
+
+            const { data, error } = await _supabase
+                .from('requests')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                console.error(error);
+                list.innerHTML = '<p style="color:red">فشل التحميل، تأكد من إلغاء RLS للجداول</p>';
+                return;
+            }
+
+            list.innerHTML = '';
+            if (!data || data.length === 0) {
+                list.innerHTML = '<p>لا توجد طلبات</p>';
+                return;
+            }
+
+            data.forEach(req => {
+                const item = document.createElement('div');
+                item.className = 'request-item';
+                const date = new Date(req.created_at).toLocaleString('ar-EG');
+
+                item.innerHTML = `
+                    <p><strong>الوقت:</strong> ${date}</p>
+                    <p><strong>البيانات:</strong> ${req.user_data}</p>
+                    <p><strong>الكود:</strong> <span style="color:#4caf50; font-weight:bold">${req.generated_code}</span></p>
+                    <div style="margin-top:10px;">
+                        <a href="${req.reg_proof_url}" target="_blank"><img src="${req.reg_proof_url}" width="100" style="border:1px solid #555"></a>
+                        <a href="${req.dep_proof_url}" target="_blank"><img src="${req.dep_proof_url}" width="100" style="border:1px solid #555"></a>
+                    </div>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        // تشغيل الزر
+        document.getElementById('adminLoginBtn').addEventListener('click', runAdminLogin);
+    </script>
 </body>
 </html>
