@@ -7,6 +7,8 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <div class="live-counter" id="liveCounter" style="top:10px; right:10px;">Live: ...</div>
+
     <div class="container">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
             <h2 style="margin: 0; border: none; font-size: 1.5rem;">تحليل الإشارة</h2>
@@ -30,6 +32,11 @@
 
     <script>
         if (!localStorage.getItem('isLoggedIn')) window.location.href = 'index.html';
+
+        // Live Counter logic
+        setInterval(() => {
+            document.getElementById('liveCounter').innerText = `Live: ${Math.floor(Math.random() * 50) + 300}`;
+        }, 3000);
 
         const display = document.getElementById('randomNumber');
         const bar = document.getElementById('progressFill');
