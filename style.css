@@ -1,4 +1,4 @@
-/* style.css - Final Hacker Theme (Arabic & Wide) */
+/* style.css - Final Hacker Theme (Images Only Selection) */
 @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&display=swap');
 
@@ -25,7 +25,6 @@ body {
     background-size: 40px 40px;
 }
 
-/* الكونتير الأساسي */
 .container {
     background-color: var(--panel-bg);
     padding: 2.5rem;
@@ -33,15 +32,12 @@ body {
     box-shadow: 0 0 15px rgba(0, 255, 0, 0.1);
     border-radius: 10px;
     width: 90%;
-    max-width: 450px; /* العرض العادي لصفحات الدخول */
+    max-width: 450px;
     text-align: center;
     position: relative;
 }
 
-/* كلاس خاص لتكبير العرض في صفحة الإنشاء */
-.container.wide-mode {
-    max-width: 850px; /* عرض كبير كما طلبت */
-}
+.container.wide-mode { max-width: 850px; }
 
 h2 {
     color: var(--hacker-green); margin-bottom: 25px;
@@ -53,42 +49,52 @@ label.title {
     color: var(--hacker-green); font-size: 0.9rem; font-weight: bold;
 }
 
-/* === خيارات البرامج (الصور) === */
+/* === خيارات البرامج (صور فقط) === */
 .program-grid {
-    display: flex; justify-content: center; gap: 15px; margin-bottom: 20px;
+    display: flex; justify-content: center; gap: 20px; margin-bottom: 25px;
 }
 
 .program-option {
     border: 2px solid #333;
     background: rgba(0,0,0,0.3);
-    padding: 15px; border-radius: 8px;
+    padding: 20px; /* زيادة الحشوة */
+    border-radius: 12px;
     cursor: pointer; transition: 0.3s;
-    width: 130px; /* عرض المربع */
+    width: 120px; /* جعل المربع أقرب للمربع */
+    height: 120px;
     position: relative;
-    display: flex; flex-direction: column; align-items: center;
+    display: flex; justify-content: center; align-items: center; /* توسيط الصورة */
 }
 
-.program-option:hover { border-color: #fff; }
+.program-option:hover {
+    border-color: #fff;
+    background: rgba(255,255,255,0.05);
+}
+.program-option:hover .program-icon {
+    transform: scale(1.1); /* تكبير الصورة عند المرور */
+}
 
 .program-option.selected {
     border-color: var(--hacker-green);
     background: rgba(0, 255, 0, 0.1);
-    box-shadow: 0 0 15px var(--hacker-green);
+    box-shadow: 0 0 20px var(--hacker-green);
 }
 
 .program-option.selected::after {
-    content: "✔"; position: absolute; top: -10px; right: -10px;
+    content: "✔"; position: absolute; top: -12px; right: -12px;
     background: var(--hacker-green); color: #000;
-    width: 25px; height: 25px; border-radius: 50%;
-    display: flex; justify-content: center; align-items: center; font-weight: bold;
+    width: 30px; height: 30px; border-radius: 50%;
+    display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 1.2rem;
+    box-shadow: 0 0 10px var(--hacker-green);
 }
 
 .program-icon {
-    width: 60px; height: 60px; object-fit: contain; margin-bottom: 10px;
+    width: 80px; height: 80px; /* تكبير الأيقونة */
+    object-fit: contain;
+    /* تم إزالة الهامش السفلي */
     filter: drop-shadow(0 0 5px var(--hacker-green));
+    transition: 0.3s;
 }
-
-.program-name { font-weight: bold; color: #fff; font-family: 'Fira Code', monospace; }
 
 /* المدخلات */
 textarea, input[type="text"] {
@@ -97,7 +103,7 @@ textarea, input[type="text"] {
     padding: 15px; color: #fff; font-family: 'Cairo', sans-serif;
     outline: none; transition: 0.3s;
 }
-textarea:focus, input:focus { border-color: var(--hacker-green); box-shadow: 0 0 10px rgba(0,255,0,0.2); }
+textarea:focus { border-color: var(--hacker-green); box-shadow: 0 0 10px rgba(0,255,0,0.2); }
 
 /* رفع الملفات */
 .upload-box {
