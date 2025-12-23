@@ -6,41 +6,61 @@
     <title>بوابة الدخول</title>
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body style="display:none;" id="bodyContent">
+    <div id="loginModal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-title" id="modalTitle">[ SYSTEM_ALERT ]</div>
+            <div class="modal-msg" id="modalMsg">...</div>
+            <div class="modal-actions"><button class="modal-btn" onclick="closeModal()">موافق</button></div>
+        </div>
+    </div>
+
     <div class="container">
         <h2>نظام الوصول المؤمن</h2>
-        <p style="color: #888; margin-bottom: 20px;">>> أدخل كود التفعيل للدخول:</p>
-        
-        <div class="input-wrapper" style="margin-bottom: 20px;">
-            <input type="text" id="accessCode" placeholder="KEY-XXXXX" style="text-align: center; font-family:'Fira Code'; letter-spacing:2px; font-weight:bold;">
-        </div>
-
-        <button id="loginBtn" onclick="login()">بدء الاتصال</button>
-        <button onclick="window.location.href='create.html'" style="background:transparent; border:1px solid #444; color:#888; margin-top:10px;">طلب مفتاح جديد</button>
+        <p style="color: #888; margin-bottom: 20px;">>> أدخل مفتاح الوصول للمتابعة...</p>
+        <input type="text" id="accessCode" placeholder="XX-XXXX-XX" style="text-align: center; font-weight: bold; font-family:'Fira Code'; letter-spacing:2px;">
+        <button id="loginBtn">بدء الاتصال</button>
+        <button class="secondary-btn" onclick="window.location.href='create.html'" style="width:100%; border-radius:4px;">طلب مفتاح جديد</button>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        const _supabase = supabase.createClient('https://zflgifemhopabfzgczgs.supabase.co', 'sb_publishable_9xZcd3BkgL6cEQwHJitrew_mbX74lJW');
+        function showModal(title, msg) { document.getElementById('modalTitle').innerText = title; document.getElementById('modalMsg').innerText = msg; document.getElementById('loginModal').classList.add('active'); }
+        function closeModal() { document.getElementById('loginModal').classList.remove('active'); }
+        const SUPABASE_URL = 'https://zflgifemhopabfzgczgs.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_9xZcd3BkgL6cEQwHJitrew_mbX74lJW';
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        async function login() {
-            const code = document.getElementById('accessCode').value.trim();
-            const btn = document.getElementById('loginBtn');
-            if(!code) return alert("أدخل الكود");
-
-            btn.innerText = "جاري التحقق...";
-            const { data } = await _supabase.from('active_codes').select('*').eq('code', code).single();
-
-            if(!data) {
-                alert("الكود غير صحيح!");
-            } else if (!data.is_active) {
-                alert("⏳ الكود صحيح ولكنه بانتظار موافقة الأدمن.");
-            } else {
-                localStorage.setItem('isLoggedIn', 'true');
-                window.location.href = 'app.html';
-            }
-            btn.innerText = "بدء الاتصال";
+        async function checkBan() {
+            try {
+                const res = await fetch('https://api.ipify.org?format=json');
+                const data = await res.json();
+                const { data: banned } = await _supabase.from('banned_ips').select('*').eq('ip', data.ip);
+                if (banned && banned.length > 0) { document.body.innerHTML = `<h1 style="color:red; text-align:center; margin-top:20%;">🚫 BLOCKED</h1>`; document.body.style.display='block'; }
+                else { document.body.style.display = 'flex'; }
+            } catch (e) { document.body.style.display = 'flex'; }
         }
+        window.onload = checkBan;
+
+        async function runLogin() {
+            const codeInput = document.getElementById('accessCode').value.trim();
+            const btn = document.getElementById('loginBtn');
+            if (!codeInput) { showModal("تنبيه", "أدخل الكود أولاً."); return; }
+            btn.innerText = "جاري التحقق..."; btn.disabled = true;
+
+            try {
+                const { data } = await _supabase.from('active_codes').select('*').eq('code', codeInput).single();
+                if (!data) {
+                    showModal("❌ خطأ", "الكود غير صحيح!");
+                } else if (data.is_active === true) {
+                    localStorage.setItem('isLoggedIn', 'true'); window.location.href = 'app.html';
+                } else {
+                    showModal("⏳ قيد الانتظار", "هذا الكود صحيح ولكنه بانتظار موافقة الأدمن.");
+                }
+            } catch (err) { showModal("⚠️ خطأ", "فشل الاتصال."); } 
+            finally { btn.innerText = "بدء الاتصال"; btn.disabled = false; }
+        }
+        document.getElementById('loginBtn').addEventListener('click', runLogin);
     </script>
 </body>
 </html>
