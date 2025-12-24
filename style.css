@@ -1,4 +1,4 @@
-/* style.css - النسخة الكاملة والنهائية (إصلاح المحاذاة بنظام Grid + تنسيقات الأدمن) */
+/* style.css - النسخة الكاملة والنهائية (إصلاح اختفاء الأدمن + توسيط الشاشة) */
 @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&display=swap');
 
@@ -21,15 +21,15 @@ body {
     background-color: var(--bg-color);
     color: var(--text-color);
     
-    /* التعديل الجذري للمحاذاة: استخدام Grid بدلاً من Flex */
+    /* === الحل الجذري للمحاذاة === */
     display: grid;
     place-items: center;
     align-content: center;
+    /* ========================== */
     
     min-height: 100vh; direction: rtl;
     overflow-x: hidden; position: relative;
     
-    /* خلفية المطر الرقمي */
     background-image: linear-gradient(0deg, transparent 24%, var(--hacker-dim) 25%, var(--hacker-dim) 26%, transparent 27%, transparent 74%, var(--hacker-dim) 75%, var(--hacker-dim) 76%, transparent 77%, transparent), 
                       linear-gradient(90deg, transparent 24%, var(--hacker-dim) 25%, var(--hacker-dim) 26%, transparent 27%, transparent 74%, var(--hacker-dim) 75%, var(--hacker-dim) 76%, transparent 77%, transparent);
     background-size: 40px 40px;
@@ -95,14 +95,12 @@ body::before {
     box-shadow: 0 0 40px rgba(0, 255, 65, 0.15), inset 0 0 20px rgba(0, 255, 65, 0.05);
     border-radius: 16px;
     width: 95%; max-width: 480px;
-    
-    /* ضمان التوسط داخل الجريد */
     margin: 20px auto; 
-    
     text-align: center; position: relative;
     backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
     animation: fadeIn 0.8s cubic-bezier(0.22, 1, 0.36, 1); z-index: 1;
-    display: none; /* مخفي مبدئياً حتى ينتهي الانترو */
+    
+    /* تم حذف display: none من هنا ليظهر الأدمن */
 }
 
 .container.wide-mode { max-width: 900px; }
