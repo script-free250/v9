@@ -1,4 +1,4 @@
-/* style.css - النسخة النهائية (تضمين أنميشن اللوجو الاحترافي + إصلاحات Grid) */
+/* style.css - النسخة النهائية (أنميشن الانتقال السلس للوجو) */
 @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&display=swap');
 
@@ -21,7 +21,6 @@ body {
     background-color: var(--bg-color);
     color: var(--text-color);
     
-    /* نظام المحاذاة Grid لضمان التوسط التام */
     display: grid;
     place-items: center;
     align-content: center;
@@ -37,15 +36,20 @@ body {
 
 @keyframes matrixMove { 0% { background-position: 0 0; } 100% { background-position: 40px 40px; } }
 
-/* === تصميم اللوجو الاحترافي === */
+/* === اللوجو الاحترافي === */
 .pro-logo {
-    width: 130px; /* حجم مناسب */
+    width: 130px; 
     height: auto;
     display: block;
-    margin: 0 auto 15px auto; /* توسيط ومسافة من الأسفل */
+    margin: 0 auto 15px auto;
     filter: drop-shadow(0 0 5px var(--hacker-green));
-    animation: logoFloat 4s ease-in-out infinite, hackerGlow 3s infinite alternate;
+    /* تم إلغاء الانميشن هنا مؤقتاً في index ليتم التحكم به عبر JS، وسيعمل في app */
     transition: transform 0.3s;
+}
+
+/* في صفحة التطبيق فقط نعيد تفعيل الطفو */
+.floating-logo {
+    animation: logoFloat 4s ease-in-out infinite, hackerGlow 3s infinite alternate;
 }
 
 .pro-logo:hover {
@@ -53,13 +57,11 @@ body {
     filter: drop-shadow(0 0 15px var(--hacker-green));
 }
 
-/* حركة الطفو (Floating) */
 @keyframes logoFloat {
     0%, 100% { transform: translateY(0); }
     50% { transform: translateY(-10px); }
 }
 
-/* توهج النيون المتنفس (Breathing Glow) */
 @keyframes hackerGlow {
     0% { filter: drop-shadow(0 0 2px var(--hacker-green)) brightness(1); }
     100% { filter: drop-shadow(0 0 12px var(--hacker-green)) brightness(1.2); }
@@ -73,7 +75,7 @@ body {
 }
 .shake-element { animation: shake 0.4s ease-in-out; }
 
-/* تأثير النبض للأزرار */
+/* تأثير النبض الأخضر */
 @keyframes pulse-green {
     0% { box-shadow: 0 0 0 0 rgba(0, 255, 65, 0.4); }
     70% { box-shadow: 0 0 0 10px rgba(0, 255, 65, 0); }
@@ -91,28 +93,51 @@ body::before {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     background-color: #000; z-index: 5000;
     display: flex; flex-direction: column; justify-content: center; align-items: center;
-    transition: opacity 1s ease-out;
+    transition: background-color 0.8s ease-out; /* نغير الخلفية فقط لتبقى العناصر */
 }
+/* كلاس لإخفاء الخلفية السوداء وكشف الموقع */
+.intro-screen.bg-transparent {
+    background-color: transparent;
+    pointer-events: none; /* عشان نقدر نضغط على اللي تحته */
+}
+
 .intro-logo {
-    width: 180px; height: auto;
+    width: 200px; height: auto;
     filter: drop-shadow(0 0 15px var(--hacker-green));
-    animation: logoPulse 2s infinite ease-in-out;
-    margin-bottom: 20px;
+    position: relative;
+    z-index: 5001;
+    transform-origin: center center;
+    will-change: transform, width, top, left; /* تحسين الأداء */
 }
+
 .intro-text {
     font-family: 'Fira Code', monospace;
     color: var(--hacker-green);
     font-size: 1.2rem;
     letter-spacing: 2px;
+    margin-top: 20px;
     animation: blinkText 1s infinite;
+    transition: opacity 0.5s;
 }
-@keyframes logoPulse {
-    0% { transform: scale(1); filter: drop-shadow(0 0 10px var(--hacker-green)); }
-    50% { transform: scale(1.1); filter: drop-shadow(0 0 25px var(--hacker-green)); }
-    100% { transform: scale(1); filter: drop-shadow(0 0 10px var(--hacker-green)); }
-}
+
 @keyframes blinkText { 50% { opacity: 0; } }
-.intro-screen.fade-out { opacity: 0; pointer-events: none; }
+
+/* === تنسيقات انترو التطبيق (App Loader) === */
+.app-loader {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: #000; z-index: 6000;
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    transition: transform 0.8s cubic-bezier(0.86, 0, 0.07, 1);
+}
+.app-loader.slide-up { transform: translateY(-100%); }
+
+.scan-line {
+    width: 100%; height: 2px; background: var(--hacker-green);
+    box-shadow: 0 0 20px var(--hacker-green);
+    animation: scanMove 2s infinite linear;
+    position: absolute;
+}
+@keyframes scanMove { 0% { top: 0; } 100% { top: 100%; } }
 
 
 .container {
@@ -125,11 +150,10 @@ body::before {
     margin: 20px auto; 
     text-align: center; position: relative;
     backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-    animation: fadeIn 0.8s cubic-bezier(0.22, 1, 0.36, 1); z-index: 1;
+    /* حذفنا الانميشن القديم fadeIn لاننا سنظهره بطريقة جديدة */
 }
 
 .container.wide-mode { max-width: 900px; }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
 .live-counter {
     position: fixed; top: 20px; right: 20px;
