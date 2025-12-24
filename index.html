@@ -9,13 +9,22 @@
 <body style="display:none;" id="bodyContent">
 
     <div id="introScreen" class="intro-screen">
-        <img src="11zon_cropped.png" alt="Logo" class="intro-logo" id="movingLogo">
-        <div class="intro-text" id="introText">جاري تهيئة النظام...</div>
+        <div class="scanline"></div>
+        
+        <div class="intro-logo-wrapper">
+            <img src="11zon_cropped.png" alt="Logo" class="intro-logo" id="movingLogo">
+        </div>
+
+        <div class="terminal-text terminal-cursor" id="terminalText">INITIALIZING...</div>
+        
+        <div class="cyber-loader">
+            <div class="cyber-loader-bar" id="loaderBar"></div>
+        </div>
     </div>
 
     <div class="live-counter" id="liveCounter">المتصلين: ...</div>
     
-    <a href="https://t.me/YOUR_TELEGRAM_LINK" class="telegram-float" target="_blank" title="دعم فني وتواصل">
+    <a href="https://t.me/YOUR_TELEGRAM_LINK" class="telegram-float" id="tgFloat" target="_blank" title="دعم فني وتواصل">
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 11.944 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.638z"/>
         </svg>
@@ -29,8 +38,8 @@
         </div>
     </div>
 
-    <div class="container" id="mainContainer" style="display: none;">
-        <img src="11zon_cropped.png" alt="App Logo" class="pro-logo" id="targetLogo" style="opacity: 0;">
+    <div class="container" id="mainContainer">
+        <img src="11zon_cropped.png" alt="App Logo" class="pro-logo" id="targetLogo">
         
         <h2>بوابة السيرفر الآمنة</h2>
         <p style="color: #888; margin-bottom: 20px;">>> أدخل الكود للدخول...</p>
@@ -74,56 +83,82 @@
         }
         setInterval(updateLiveCounter, 3000);
 
-        function playIntro() {
-            document.body.style.display = 'grid'; 
+        // دالة المساعدة للتأخير (Promise based sleep)
+        const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+        async function runCinemaIntro() {
+            document.body.style.display = 'grid'; // إظهار الجسم
             
-            // 1. الانتظار قليلاً لظهور الانترو
+            const terminalText = document.getElementById('terminalText');
+            const loaderBar = document.getElementById('loaderBar');
+            const movingLogo = document.getElementById('movingLogo');
+            const introScreen = document.getElementById('introScreen');
+            const mainContainer = document.getElementById('mainContainer');
+            const targetLogo = document.getElementById('targetLogo');
+
+            // 1. Terminal Typing Effect
+            const steps = ["CONNECTING...", "BYPASSING FIREWALL...", "ENCRYPTING DATA...", "ACCESS GRANTED"];
+            
+            // تحريك شريط التحميل ببطء في البداية
+            loaderBar.style.width = "30%";
+
+            for(let txt of steps) {
+                terminalText.innerText = txt;
+                // تأثير تشفير النصوص (Random Chars)
+                await wait(150); 
+                terminalText.innerText = txt.split('').map(c => Math.random() > 0.5 ? String.fromCharCode(65+Math.random()*20) : c).join('');
+                await wait(100);
+                terminalText.innerText = txt; 
+                await wait(600);
+            }
+
+            loaderBar.style.width = "100%";
+            await wait(300);
+            
+            // إخفاء النصوص واللودر
+            terminalText.style.opacity = '0';
+            document.querySelector('.cyber-loader').style.opacity = '0';
+
+            // 2. ظهور اللوجو بتأثير Glitch
+            movingLogo.style.opacity = '1';
+            movingLogo.classList.add('glitch-effect');
+            
+            // تشغيل صوت بسيط إذا أمكن (اختياري، يتطلب تفاعل المستخدم عادةً، لذا سنتخطاه للكود الصامت)
+            await wait(1200); // مدة عرض اللوجو المشوش
+
+            // 3. التحضير للانتقال (حساب المواقع)
+            movingLogo.classList.remove('glitch-effect'); // إيقاف التشويش للحركة السلسة
+            mainContainer.style.display = 'block'; // جعل الكونتينر موجوداً لكن شفاف
+            
+            const startRect = movingLogo.getBoundingClientRect();
+            const endRect = targetLogo.getBoundingClientRect();
+
+            // إخفاء خلفية الانترو تدريجياً
+            introScreen.style.backgroundColor = 'transparent';
+            document.querySelector('.scanline').style.display = 'none';
+
+            // حساب فروق المسافات
+            const deltaX = endRect.left - startRect.left;
+            const deltaY = endRect.top - startRect.top;
+            const scale = endRect.width / startRect.width;
+
+            // تطبيق الحركة (FLIP Animation)
+            movingLogo.style.transition = 'all 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55)';
+            movingLogo.style.transform = `translate(${deltaX}px, ${deltaY}px) scale(${scale})`;
+
+            // 4. إظهار واجهة المستخدم بالتزامن
             setTimeout(() => {
-                const introScreen = document.getElementById('introScreen');
-                const introText = document.getElementById('introText');
-                const movingLogo = document.getElementById('movingLogo');
-                const targetLogo = document.getElementById('targetLogo');
-                const mainContainer = document.getElementById('mainContainer');
+                mainContainer.classList.add('ui-visible');
+                document.getElementById('liveCounter').classList.add('show');
+                document.getElementById('tgFloat').classList.add('show');
+            }, 300);
 
-                // إخفاء النص فقط
-                introText.style.opacity = 0;
-
-                // 2. إظهار الكونتينر (لكن اللوجو بداخله مخفي opacity:0)
-                // والهدف هو حساب مكانه
-                mainContainer.style.display = 'block';
-
-                // جعل خلفية الانترو شفافة لرؤية الكونتينر تحتها
-                introScreen.classList.add('bg-transparent');
-
-                // 3. حساب الإحداثيات للانتقال (FLIP Animation)
-                // نستخدم setTimeout صغير لضمان أن الكونتينر ظهر وتم حساب ابعاده
-                setTimeout(() => {
-                    const startRect = movingLogo.getBoundingClientRect();
-                    const endRect = targetLogo.getBoundingClientRect();
-
-                    const deltaX = endRect.left - startRect.left;
-                    const deltaY = endRect.top - startRect.top;
-                    const scale = endRect.width / startRect.width;
-
-                    // تطبيق الحركة
-                    movingLogo.style.transition = 'transform 1s cubic-bezier(0.68, -0.55, 0.27, 1.55)'; // تأثير مطاطي جميل
-                    movingLogo.style.transform = `translate(${deltaX}px, ${deltaY}px) scale(${scale})`;
-
-                    // 4. عند انتهاء الحركة، نبدل اللوجوهات
-                    setTimeout(() => {
-                        movingLogo.style.opacity = 0; // اخفاء اللوجو المتحرك
-                        targetLogo.style.opacity = 1; // إظهار اللوجو الثابت
-                        
-                        // تفعيل انميشن الطفو على اللوجو الثابت الآن
-                        targetLogo.classList.add('floating-logo');
-
-                        // تنظيف الانترو
-                        setTimeout(() => { introScreen.remove(); }, 500);
-                    }, 1000); // نفس مدة الـ transition
-
-                }, 100);
-
-            }, 2500); // مدة عرض اللوجو في المنتصف قبل الحركة
+            // 5. التنظيف النهائي
+            await wait(800);
+            movingLogo.style.opacity = '0';
+            targetLogo.style.opacity = '1';
+            targetLogo.classList.add('active-animate'); // تفعيل أنميشن اللوجو الدائم
+            introScreen.remove(); // حذف الانترو من الدوم
         }
 
         async function checkBan() {
@@ -137,8 +172,8 @@
                     document.body.innerHTML = `<h1 style="color:red; text-align:center; margin-top:20%;">🚫 BLOCKED</h1>`; 
                     document.body.style.display='block'; 
                 }
-                else { playIntro(); }
-            } catch (e) { playIntro(); }
+                else { runCinemaIntro(); }
+            } catch (e) { runCinemaIntro(); }
         }
         window.onload = checkBan;
 
