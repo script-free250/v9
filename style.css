@@ -1,4 +1,4 @@
-/* style.css - النسخة النهائية (تم إصلاح المسافات وإضافة تنسيقات الأدمن الجديد) */
+/* style.css - النسخة الكاملة والنهائية (إصلاح المحاذاة بنظام Grid + تنسيقات الأدمن) */
 @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&display=swap');
 
@@ -20,7 +20,12 @@ body {
     font-family: 'Cairo', sans-serif;
     background-color: var(--bg-color);
     color: var(--text-color);
-    display: flex; justify-content: center; align-items: center;
+    
+    /* التعديل الجذري للمحاذاة: استخدام Grid بدلاً من Flex */
+    display: grid;
+    place-items: center;
+    align-content: center;
+    
     min-height: 100vh; direction: rtl;
     overflow-x: hidden; position: relative;
     
@@ -90,6 +95,10 @@ body::before {
     box-shadow: 0 0 40px rgba(0, 255, 65, 0.15), inset 0 0 20px rgba(0, 255, 65, 0.05);
     border-radius: 16px;
     width: 95%; max-width: 480px;
+    
+    /* ضمان التوسط داخل الجريد */
+    margin: 20px auto; 
+    
     text-align: center; position: relative;
     backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
     animation: fadeIn 0.8s cubic-bezier(0.22, 1, 0.36, 1); z-index: 1;
@@ -120,11 +129,10 @@ body::before {
 .telegram-float:hover { transform: scale(1.1) translateY(-5px); box-shadow: 0 0 35px #24A1DE; }
 .telegram-float svg { width: 28px; height: 28px; fill: #fff; }
 
-/* === التعديل هنا: تثبيت مكان الإدخال === */
 .input-wrapper { 
     position: relative; 
     width: 100%; 
-    margin-bottom: 25px; /* زيادة المسافة لمنع التداخل */
+    margin-bottom: 25px;
     display: flex;
     justify-content: center;
 }
@@ -222,11 +230,12 @@ button:hover { background: linear-gradient(135deg, #006600, #00cc00); transform:
 .manual-add-box { 
     background: #0a0a0a; 
     border: 1px dashed var(--hacker-green); 
-    padding: 15px; 
-    margin-bottom: 25px; 
+    padding: 20px; 
+    margin-bottom: 30px; 
     border-radius: 8px; 
+    text-align: right;
 }
-.manual-row { display: flex; gap: 10px; align-items: center; }
+.manual-row { display: flex; gap: 10px; align-items: center; margin-top: 10px; }
 .manual-btn { 
     margin: 0; 
     flex: 1; 
