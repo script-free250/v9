@@ -3,190 +3,335 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>طلب تفعيل</title>
+    <title>لوحة القيادة (ROOT)</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        .container { max-width: 1000px; }
+        .profit-badge { background: gold; color: #000; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 0.8rem; box-shadow: 0 0 10px gold; }
+        .audit-log-box { background: #050505; border: 1px solid #333; height: 150px; overflow-y: scroll; font-family: 'Fira Code'; font-size: 0.8rem; color: #aaa; padding: 10px; margin-top: 20px; border-radius: 8px; }
+        .banned-item { display: flex; justify-content: space-between; align-items: center; background: rgba(255, 42, 42, 0.1); border: 1px solid var(--danger-red); padding: 10px; margin-bottom: 8px; border-radius: 6px; }
+        .banned-ip { font-family: 'Fira Code'; color: #fff; font-weight: bold; }
+        .unban-btn { background: var(--hacker-green); color: #000; border: none; padding: 5px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .unban-btn:hover { box-shadow: 0 0 10px var(--hacker-green); }
+        
+        .signal-control-box { background: #1a0505; border: 1px solid var(--warning-orange); padding: 20px; border-radius: 8px; margin-bottom: 30px; }
+        .mode-switch { display: flex; gap: 20px; margin-bottom: 15px; }
+        .radio-label { color: #fff; cursor: pointer; display: flex; align-items: center; gap: 8px; font-weight: bold; }
+        .radio-label input { width: auto; margin: 0; }
+        .control-textarea { background: #000; color: var(--hacker-green); font-family: 'Fira Code'; height: 80px; font-size: 0.9rem; }
+    </style>
 </head>
 <body>
-    <div class="live-counter" id="liveCounter">المتصلين: ...</div>
-    
-    <div id="customModal" class="modal-overlay">
+    <div id="confirmModal" class="modal-overlay">
         <div class="modal-box">
-            <div class="modal-title" id="modalTitle">[ SYSTEM_MSG ]</div>
-            <div class="modal-msg" id="modalMsg">...</div>
-            <div class="modal-actions"><button class="modal-btn" onclick="closeModal()">موافق</button></div>
+            <div class="modal-title" id="confirmTitle">[ CONFIRM_ACTION ]</div>
+            <div class="modal-msg" id="confirmMsg">...</div>
+            <div class="modal-actions">
+                <button class="modal-btn" id="confirmOkBtn">نعم</button>
+                <button class="modal-btn cancel" onclick="closeConfirm()">إلغاء</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="alertModal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-title" id="alertTitle">[ ADMIN_MSG ]</div>
+            <div class="modal-msg" id="alertMsg">...</div>
+            <div class="modal-actions"><button class="modal-btn" onclick="closeAlert()">موافق</button></div>
         </div>
     </div>
 
-    <div id="loadingOverlay" class="loading-overlay">
-        <div class="spinner"></div>
-        <div id="loadingText" class="loading-text">جاري التحقق من الأمان...</div>
-    </div>
-
-    <div class="container wide-mode" id="mainContainer" style="display:none;">
-        <h2 id="typewriterTitle"></h2>
-        
-        <label class="title">>> اختر المنصة:</label>
-        <div class="program-grid">
-            <div class="program-option" onclick="playSound('click'); selectProgram('1x', this)"><img src="1x.png" class="program-icon"></div>
-            <div class="program-option" onclick="playSound('click'); selectProgram('m', this)"><img src="m.png" class="program-icon"></div>
-            <div class="program-option" onclick="playSound('click'); selectProgram('l', this)"><img src="l.png" class="program-icon"></div>
+    <div class="container">
+        <div id="adminLogin">
+            <h2 id="typewriterTitle"></h2>
+            <input type="email" id="adminEmail" placeholder="USER_ID">
+            <input type="password" id="adminPass" placeholder="PASSPHRASE">
+            <button id="authBtn" onclick="playSound('click')">توثيق الدخول</button>
         </div>
 
-        <label class="title">>> بيانات حسابك:</label>
-        <textarea id="userData" placeholder="البريد الإلكتروني والآيدي..."></textarea>
-
-        <div style="display: flex; gap: 20px; flex-wrap: wrap;">
-            <div style="flex: 1; min-width: 250px;">
-                <label class="title">>> إثبات التسجيل:</label>
-                <label for="regProof" class="upload-box" id="regBox">
-                    <div class="upload-placeholder"><span id="regText">رفع الصورة</span><span>📂</span></div>
-                    <img id="regPreview" class="preview-img">
-                    <input type="file" id="regProof" accept="image/*" onchange="handleFileSelect(this, 'regBox', 'regText', 'regPreview')">
-                </label>
+        <div id="adminPanel" class="hidden">
+            <div class="stats-grid">
+                <div class="stat-card"><span class="stat-number" id="totalCount">0</span><span class="stat-label">طلبات</span></div>
+                <div class="stat-card" style="border-color: gold;"><span class="stat-number" id="totalMoney" style="color:gold;">$0</span><span class="stat-label">أرباح</span></div>
+                <div class="stat-card" style="border-color: var(--danger-red);"><span class="stat-number" id="bannedCount" style="color:var(--danger-red);">0</span><span class="stat-label">محظورين</span></div>
             </div>
-            <div style="flex: 1; min-width: 250px;">
-                <label class="title">>> إثبات الإيداع:</label>
-                <label for="depProof" class="upload-box" id="depBox">
-                    <div class="upload-placeholder"><span id="depText">رفع الصورة</span><span>💰</span></div>
-                    <img id="depPreview" class="preview-img">
-                    <input type="file" id="depProof" accept="image/*" onchange="handleFileSelect(this, 'depBox', 'depText', 'depPreview')">
-                </label>
-            </div>
-        </div>
 
-        <button id="submitBtn" onclick="runSubmit()">إنشاء كود جديد</button>
-        
-        <div id="codeDisplay" class="hidden" style="margin-top: 30px; border-top: 1px solid rgba(0,255,0,0.2); padding-top: 20px;">
-            <p style="color:var(--hacker-green);">>> تم إنشاء الكود. الكود الخاص بك:</p>
-            <div style="background:rgba(0,0,0,0.5); padding:20px; border-radius:10px; border:1px solid var(--hacker-green); margin:15px 0; font-size:2.2rem; font-weight:900; letter-spacing:4px; font-family:'Fira Code'; color:#fff; text-shadow: 0 0 10px var(--hacker-green);" id="generatedCode"></div>
+            <div class="signal-control-box">
+                <h3 style="margin-top:0; color:var(--warning-orange);">🎮 غرفة التحكم في النتائج (App Signals)</h3>
+                
+                <div class="mode-switch">
+                    <label class="radio-label">
+                        <input type="radio" name="signalMode" value="random" checked onchange="toggleSignalInputs()">
+                        وضع عشوائي (تلقائي)
+                    </label>
+                    <label class="radio-label">
+                        <input type="radio" name="signalMode" value="manual" onchange="toggleSignalInputs()">
+                        وضع التحكم (يدوي)
+                    </label>
+                </div>
+
+                <div id="manualInputDiv" class="hidden">
+                    <p style="color:#aaa; font-size:0.8rem; margin-bottom:5px;">أدخل الأرقام وافصل بينها بمسافة (مثال: 1.50 2.30 99.00)</p>
+                    <textarea id="manualNumbers" class="control-textarea" placeholder="1.00 2.00 3.00..."></textarea>
+                </div>
+
+                <button class="manual-btn" style="border-color:var(--warning-orange); color:var(--warning-orange);" onclick="saveSignalSettings()">💾 حفظ إعدادات الإشارات</button>
+            </div>
+            <div class="manual-add-box">
+                <h3 style="margin-top:0; color:var(--hacker-green); font-size:1.1rem;">✨ إنشاء حساب VIP يدوياً</h3>
+                <div class="manual-row">
+                    <input type="text" id="manualCodeInput" placeholder="أدخل الكود هنا (اختياري)..." style="flex:2;">
+                    <button class="manual-btn" onclick="createManualCode()">➕ إضافة وتفعيل</button>
+                </div>
+            </div>
+
+            <div class="admin-controls">
+                <input type="text" id="searchInput" class="search-input" placeholder="بحث (ID / كود / اسم)..." onkeyup="filterRequests()">
+                <button class="filter-btn active" onclick="setFilter('all', this)">الكل</button>
+                <button class="filter-btn" onclick="setFilter('pending', this)">معلق</button>
+                <button class="filter-btn" onclick="setFilter('active', this)">مفعل</button>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; margin-bottom:20px; border-bottom:1px solid #333; padding-bottom:15px;">
+                <h3 style="margin:0; color:#fff;">سجل العمليات الحية</h3>
+                <button onclick="playSound('click'); loadData()" style="width:auto; margin:0; font-size:0.9rem; background:transparent; border:1px solid #555; color:#fff;">تحديث ↻</button>
+            </div>
+            <div id="requestsList" style="text-align: right;">جاري الاتصال...</div>
             
-            <p style="color:#ffaa00; font-size:0.9rem; margin-bottom:15px; font-family:'Cairo';">⚠️ احتفظ بالكود! لن يعمل حتى يوافق الأدمن.</p>
+            <div style="margin-top: 40px; border-top: 2px solid #333; padding-top: 20px;">
+                <h3 style="color: var(--danger-red); border-bottom: 1px dashed #333; padding-bottom: 10px;">🚫 إدارة المحظورين (Banned IPs)</h3>
+                <div id="bannedListContainer">جاري تحميل القائمة...</div>
+            </div>
 
-            <button class="copy-btn" onclick="copyCode()">📋 نسخ الكود</button>
-            <br>
-            <button class="secondary-btn" onclick="window.location.href='index'" style="margin-top:20px; width:100%; border-color:#fff; color:#fff;">🔙 العودة لصفحة الدخول</button>
+            <h3 style="color:#666; font-size:0.9rem; margin-top:20px;">System Audit Log:</h3>
+            <div id="auditLog" class="audit-log-box">تحميل السجل...</div>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playSound(type) { if (audioCtx.state === 'suspended') audioCtx.resume(); const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain(); osc.connect(gain); gain.connect(audioCtx.destination); if (type === 'click') { osc.type = 'sine'; osc.frequency.setValueAtTime(800, audioCtx.currentTime); gain.gain.setValueAtTime(0.1, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.05); } }
+        function typeWriter(text, elementId) { let i = 0; const target = document.getElementById(elementId); target.innerHTML = ""; function type() { if (i < text.length) { target.innerHTML += text.charAt(i); i++; setTimeout(type, 50); } } type(); }
+        
+        // تعديل مهم: إظهار الواجهة عند التحميل
+        window.onload = () => {
+            document.querySelector('.container').classList.add('ui-visible');
+            typeWriter("دخول المشرف (ROOT)", "typewriterTitle");
+        };
+
+        function showAlert(title, msg) { document.getElementById('alertTitle').innerText = title; document.getElementById('alertMsg').innerText = msg; document.getElementById('alertModal').classList.add('active'); }
+        function closeAlert() { document.getElementById('alertModal').classList.remove('active'); }
+        let confirmCallback = null;
+        function showConfirm(title, msg, callback) { document.getElementById('confirmTitle').innerText = title; document.getElementById('confirmMsg').innerText = msg; confirmCallback = callback; document.getElementById('confirmModal').classList.add('active'); }
+        function closeConfirm() { document.getElementById('confirmModal').classList.remove('active'); }
+        document.getElementById('confirmOkBtn').onclick = () => { if(confirmCallback) confirmCallback(); closeConfirm(); };
+
         const SUPABASE_URL = 'https://zflgifemhopabfzgczgs.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_9xZcd3BkgL6cEQwHJitrew_mbX74lJW';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        const TELEGRAM_TOKEN = '8362386006:AAF8yKWrs7LCKva6zcu379Vn-vma1xbjF1s';
-        const ADMIN_CHAT_ID = '8114406682';
 
-        let userIP = "Unknown";
-        let selectedProgram = null;
+        let allRequests = [];
+        let currentFilter = 'all';
 
-        function getDeviceType() {
-            const ua = navigator.userAgent;
-            if (/(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i.test(ua)) return "Tablet";
-            if (/Mobile|Android|iP(hone|od)|IEMobile|BlackBerry|Kindle|Silk-Accelerated/.test(ua)) return "Mobile";
-            return "Desktop";
-        }
-        function getFingerprint() {
-            return btoa(navigator.userAgent + screen.width + screen.colorDepth).slice(0, 12);
+        function escapeHtml(text) {
+            if (!text) return "";
+            return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
         }
 
-        setInterval(() => {
-            document.getElementById('liveCounter').innerText = `المتصلين: ${Math.floor(Math.random() * 50) + 300}`;
-        }, 3000);
+        document.getElementById('authBtn').addEventListener('click', () => {
+            const e = document.getElementById('adminEmail').value; const p = document.getElementById('adminPass').value;
+            if(e === "mm@mm.mm" && p === "mm023123") { 
+                document.getElementById('adminLogin').classList.add('hidden'); 
+                document.getElementById('adminPanel').classList.remove('hidden'); 
+                loadData(); 
+                loadAuditLog(); 
+                loadSignalSettings(); 
+            } else { showAlert("❌ خطأ", "بيانات خاطئة!"); }
+        });
 
-        function showModal(title, msg) { document.getElementById('modalTitle').innerText = title; document.getElementById('modalMsg').innerText = msg; document.getElementById('customModal').classList.add('active'); playSound('click'); }
-        function closeModal() { document.getElementById('customModal').classList.remove('active'); }
+        async function logAction(action) {
+            const time = new Date().toISOString();
+            const logEntry = `[${time}] ADMIN: ${action}`;
+            await _supabase.from('audit_logs').insert([{ log: logEntry }]);
+            loadAuditLog();
+        }
 
-        async function checkBan() {
-            document.getElementById('loadingOverlay').classList.add('active');
-            try {
-                // إضافة timeout لتجنب التعليق إذا كانت الخدمة محظورة
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 5000);
-                
-                const res = await fetch('https://api.ipify.org?format=json', { signal: controller.signal });
-                clearTimeout(timeoutId);
-                
-                const data = await res.json();
-                userIP = data.ip;
-                const { data: banned } = await _supabase.from('banned_ips').select('*').eq('ip', userIP);
-                
-                if (banned && banned.length > 0) {
-                    document.body.innerHTML = `<div style="display:flex;justify-content:center;align-items:center;height:100vh;background:#000;color:red;flex-direction:column;text-align:center;"><h1 style="font-size:4rem;text-shadow:0 0 20px red;">🚫 ACCESS DENIED</h1><p>BANNED IP: ${userIP}</p></div>`;
-                } else {
-                    showMainContent();
-                }
-            } catch (e) {
-                console.log("Check skipped or failed", e);
-                showMainContent();
+        function toggleSignalInputs() {
+            const mode = document.querySelector('input[name="signalMode"]:checked').value;
+            const div = document.getElementById('manualInputDiv');
+            if(mode === 'manual') div.classList.remove('hidden');
+            else div.classList.add('hidden');
+        }
+
+        async function loadSignalSettings() {
+            const { data, error } = await _supabase.from('settings').select('*').eq('id', 1).single();
+            if(data) {
+                document.querySelector(`input[name="signalMode"][value="${data.mode}"]`).checked = true;
+                document.getElementById('manualNumbers').value = data.manual_list || "";
+                toggleSignalInputs();
             }
         }
 
-        function showMainContent() {
-            document.getElementById('loadingOverlay').classList.remove('active');
-            const container = document.getElementById('mainContainer');
-            container.style.display = 'block';
-            // هذا السطر هو الحل لمشكلة الاختفاء
-            setTimeout(() => container.classList.add('ui-visible'), 50);
-            typeWriter("إنشاء كود جديد مجانا //", "typewriterTitle");
+        async function saveSignalSettings() {
+            const mode = document.querySelector('input[name="signalMode"]:checked').value;
+            const list = document.getElementById('manualNumbers').value;
+            
+            showConfirm("حفظ الإعدادات", "هل تريد تحديث طريقة عرض الأرقام للمستخدمين؟", async () => {
+                const { error } = await _supabase.from('settings').upsert({ id: 1, mode: mode, manual_list: list });
+                if(error) showAlert("خطأ", "فشل الحفظ");
+                else {
+                    logAction(`Updated Signals: Mode=${mode}`);
+                    showAlert("تم ✅", "تم تحديث إعدادات الإشارات بنجاح!");
+                }
+            });
         }
 
-        window.onload = checkBan;
+        async function createManualCode() {
+            let code = document.getElementById('manualCodeInput').value.trim();
+            if(!code) code = 'VIP-' + Math.floor(100000 + Math.random() * 900000);
 
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        function playSound(type) { if (audioCtx.state === 'suspended') audioCtx.resume(); const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain(); osc.connect(gain); gain.connect(audioCtx.destination); if (type === 'click') { osc.type = 'sine'; osc.frequency.setValueAtTime(800, audioCtx.currentTime); gain.gain.setValueAtTime(0.1, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.05); } else if (type === 'success') { osc.type = 'square'; osc.frequency.setValueAtTime(400, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(1000, audioCtx.currentTime + 0.1); gain.gain.setValueAtTime(0.1, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.3); } }
-        document.addEventListener('mousemove', e => { document.body.style.setProperty('--mouse-x', e.clientX + 'px'); document.body.style.setProperty('--mouse-y', e.clientY + 'px'); });
-        function typeWriter(text, elementId) { let i = 0; const target = document.getElementById(elementId); target.innerHTML = ""; function type() { if (i < text.length) { target.innerHTML += text.charAt(i); i++; setTimeout(type, 50); } } type(); }
-        function handleFileSelect(input, boxId, textId, previewId) { if(input.files[0]) { playSound('click'); const file = input.files[0]; document.getElementById(boxId).classList.add('uploaded'); document.getElementById(textId).innerText = "تم"; const reader = new FileReader(); reader.onload = e => { const img = document.getElementById(previewId); img.src = e.target.result; img.style.display = "block"; }; reader.readAsDataURL(file); } }
-        function selectProgram(name, el) { selectedProgram = name; document.querySelectorAll('.program-option').forEach(d => d.classList.remove('selected')); el.classList.add('selected'); playSound('click'); }
-        function copyCode() { const code = document.getElementById('generatedCode').innerText; navigator.clipboard.writeText(code); showModal("✅ نجاح", "تم نسخ الكود للحافظة!"); }
-        function toggleLoading(show, text) { const overlay = document.getElementById('loadingOverlay'); if(text) document.getElementById('loadingText').innerText = text; if(show) overlay.classList.add('active'); else overlay.classList.remove('active'); }
-        async function uploadImage(file) { const fileName = `${Date.now()}_${file.name.replace(/\s/g, '_')}`; const { error } = await _supabase.storage.from('proofs').upload(fileName, file); if(error) throw error; const { data } = _supabase.storage.from('proofs').getPublicUrl(fileName); return data.publicUrl; }
+            showConfirm("إضافة كود", `هل تريد تفعيل الكود: ${code}؟`, async () => {
+                const { error } = await _supabase.from('active_codes').insert([{ code: code, is_active: true }]);
+                if(error) {
+                    showAlert("خطأ", "لم يتم إضافة الكود.");
+                } else {
+                    logAction(`Manually Created Code: ${code}`);
+                    showAlert("نجاح ✅", `تم إضافة الكود ${code} وتفعيله.`);
+                    document.getElementById('manualCodeInput').value = '';
+                }
+            });
+        }
+
+        async function activateCode(code, reqId) {
+            let profit = prompt("💰 أدخل مبلغ الربح من هذا المستخدم:", "0");
+            if (profit === null) return; 
+
+            showConfirm("تفعيل الكود", `تفعيل الكود وتسجيل ربح ${profit}؟`, async () => {
+                const { error } = await _supabase.from('active_codes').update({ is_active: true }).eq('code', code);
+                await _supabase.from('requests').update({ profit: profit, status: 'active' }).eq('id', reqId);
+                
+                if(error) showAlert("خطأ", "فشل التفعيل."); 
+                else {
+                    logAction(`Activated code ${code} - Profit: ${profit}`);
+                    showAlert("نجاح ✅", "تم التفعيل.");
+                    loadData();
+                }
+            });
+        }
+
+        async function banUser(ip) { 
+            showConfirm("حظر IP", `حظر ${ip} نهائياً؟`, async () => { 
+                const { error } = await _supabase.from('banned_ips').insert([{ ip: ip }]); 
+                logAction(`Banned IP ${ip}`); 
+                if(error) showAlert("خطأ", "فشل الحظر."); else { showAlert("تم", "تم الحظر 🚫"); loadData(); } 
+            }); 
+        }
         
-        async function sendToTelegram(program, data, code, regUrl, depUrl, ip, device) { 
-            const apiUrl = `https://api.telegram.org/bot${TELEGRAM_TOKEN}`; 
-            const message = `🚨 <b>طلب جديد!</b>\n🌍 <b>IP:</b> ${ip}\n📱 <b>Device:</b> ${device}\n💻 <b>${program}</b>\n👤 <b>بيانات:</b>\n${data}\n\n🔑 <code>${code}</code>`; 
-            fetch(`${apiUrl}/sendMessage`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ chat_id: ADMIN_CHAT_ID, text: message, parse_mode: 'HTML' }) }); 
+        async function unbanUser(ip) {
+            showConfirm("فك الحظر", `هل أنت متأكد من إلغاء حظر IP: ${ip}؟`, async () => {
+                const { error } = await _supabase.from('banned_ips').delete().eq('ip', ip);
+                logAction(`Unbanned IP ${ip}`);
+                if(error) showAlert("خطأ", "فشل العملية."); else { showAlert("نجاح", "تم فك الحظر ✅"); loadData(); }
+            });
         }
 
-        async function runSubmit() {
-            playSound('click');
-            const userData = document.getElementById('userData').value;
-            const regFile = document.getElementById('regProof').files[0];
-            const depFile = document.getElementById('depProof').files[0];
-            const btn = document.getElementById('submitBtn');
+        async function deleteRequest(id) { showConfirm("حذف", "حذف السجل نهائياً؟", async () => { await _supabase.from('requests').delete().eq('id', id); logAction(`Deleted Request ID ${id}`); loadData(); }); }
 
-            if(!selectedProgram) { showModal("⚠️ خطأ", "اختر المنصة أولاً."); return; }
-            if(!userData) { showModal("⚠️ خطأ", "أدخل بيانات حسابك."); return; }
-            if(!regFile || !depFile) { showModal("⚠️ خطأ", "ارفع صور الإثبات."); return; }
+        function setFilter(type, btn) {
+            currentFilter = type;
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            renderList();
+        }
 
-            toggleLoading(true, "جاري إنشاء الكود...");
+        function filterRequests() { renderList(); }
 
-            try {
-                const [regUrl, depUrl] = await Promise.all([
-                    uploadImage(regFile),
-                    uploadImage(depFile)
-                ]);
+        async function loadAuditLog() {
+            const { data } = await _supabase.from('audit_logs').select('*').order('created_at', {ascending:false}).limit(20);
+            const logBox = document.getElementById('auditLog');
+            if(data) logBox.innerHTML = data.map(l => `<div>${l.log}</div>`).join('');
+        }
 
-                const code = 'CODE-' + Math.floor(100000 + Math.random() * 900000);
+        async function loadData() {
+            const list = document.getElementById('requestsList'); list.innerHTML = 'جاري التحميل...';
+            
+            const { data: requests } = await _supabase.from('requests').select('*').order('created_at', {ascending:false});
+            const { data: bannedList } = await _supabase.from('banned_ips').select('*');
+
+            const bannedContainer = document.getElementById('bannedListContainer');
+            if(bannedList && bannedList.length > 0) {
+                bannedContainer.innerHTML = bannedList.map(b => `
+                    <div class="banned-item">
+                        <span class="banned-ip">${b.ip}</span>
+                        <button class="unban-btn" onclick="unbanUser('${b.ip}')">فك الحظر</button>
+                    </div>
+                `).join('');
+                document.getElementById('bannedCount').innerText = bannedList.length;
+            } else {
+                bannedContainer.innerHTML = '<p style="color:#666;">لا يوجد مستخدمين محظورين.</p>';
+                document.getElementById('bannedCount').innerText = 0;
+            }
+
+            if(requests) {
+                allRequests = requests;
+                let totalMoney = 0;
+                requests.forEach(r => { if(r.profit) totalMoney += parseFloat(r.profit); });
                 
-                const device = getDeviceType();
-                const fp = getFingerprint();
-                const fullData = `System: [${selectedProgram}] | IP: ${userIP}\nDevice: ${device} | FP: ${fp}\n${userData}`;
-
-                await _supabase.from('requests').insert([{ user_data: fullData, reg_proof_url: regUrl, dep_proof_url: depUrl, generated_code: code }]);
-                await _supabase.from('active_codes').insert([{ code: code, is_active: false }]);
-
-                sendToTelegram(selectedProgram, userData, code, regUrl, depUrl, userIP, device);
-
-                toggleLoading(false); playSound('success'); 
-                showModal("تم الطلب بنجاح", "تم إنشاء الكود.");
+                document.getElementById('totalCount').innerText = requests.length;
+                document.getElementById('totalMoney').innerText = "$" + totalMoney;
                 
-                document.getElementById('codeDisplay').classList.remove('hidden');
-                document.getElementById('generatedCode').innerText = code;
-                btn.style.display = 'none';
-                document.getElementById('codeDisplay').scrollIntoView({ behavior: 'smooth' });
+                renderList();
+            } else { list.innerHTML = '<p>لا توجد بيانات.</p>'; }
+        }
 
-            } catch (e) { console.error(e); toggleLoading(false); showModal("❌ فشل", "فشل الاتصال بالسيرفر."); }
+        function renderList() {
+            const list = document.getElementById('requestsList');
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            list.innerHTML = '';
+
+            const filtered = allRequests.filter(r => {
+                const matchesSearch = r.user_data.toLowerCase().includes(search) || r.generated_code.toLowerCase().includes(search);
+                const isActive = r.status === 'active';
+                if (currentFilter === 'active' && !isActive) return false;
+                if (currentFilter === 'pending' && isActive) return false;
+                return matchesSearch;
+            });
+
+            filtered.forEach(r => {
+                const ipMatch = r.user_data.match(/IP: ([\d\.]+)/);
+                const userIP = ipMatch ? ipMatch[1] : 'Unknown';
+                const deviceMatch = r.user_data.match(/Device: (\w+)/);
+                const device = deviceMatch ? deviceMatch[1] : 'Unknown';
+                const deviceIcon = device === 'Mobile' ? '📱' : (device === 'Desktop' ? '💻' : '📟');
+                const d = new Date(r.created_at).toLocaleString('ar-EG');
+                const profitDisplay = r.profit ? `<span class="profit-badge">+$${r.profit}</span>` : '';
+                const safeUserData = escapeHtml(r.user_data);
+
+                const div = document.createElement('div');
+                div.style.cssText = "background:#0a0a0a; border:1px solid #333; padding:20px; margin-bottom:15px; border-right: 4px solid " + (r.status==='active'?'gold':'#0f0') + "; box-shadow: 0 5px 15px rgba(0,0,0,0.3); border-radius: 8px;";
+                div.innerHTML = `
+                    <div style="color:#666; font-size:0.8rem; margin-bottom:10px; font-family:'Fira Code'; display:flex; justify-content:space-between;">
+                        <span>${d}</span>
+                        <span style="color:#fff;">${deviceIcon} ${userIP}</span>
+                    </div>
+                    <div style="background:#111; padding:15px; white-space:pre-wrap; color:#fff; margin-bottom:10px; border-radius:4px;">${safeUserData}</div>
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <p>الكود: <span style="color:#0f0; font-weight:bold; font-family:'Fira Code'; font-size:1.2rem; text-shadow:0 0 5px #0f0;">${r.generated_code}</span></p>
+                        ${profitDisplay}
+                    </div>
+                    <div style="display:flex; gap:10px; margin-top:15px; flex-wrap:wrap;">
+                        <a href="${r.reg_proof_url}" target="_blank"><img src="${r.reg_proof_url}" height="60" style="border:1px solid #555; border-radius:4px;"></a>
+                        <a href="${r.dep_proof_url}" target="_blank"><img src="${r.dep_proof_url}" height="60" style="border:1px solid #555; border-radius:4px;"></a>
+                    </div>
+                    <div style="margin-top:15px; border-top:1px dashed #333; padding-top:10px;">
+                        <button class="action-btn activate-btn" onclick="activateCode('${r.generated_code}', ${r.id})">✅ تفعيل وتسجيل ربح</button>
+                        <button class="action-btn ban-btn" onclick="banUser('${userIP}')">🚫 حظر</button>
+                        <button class="action-btn delete-btn" onclick="deleteRequest(${r.id})">🗑️ حذف</button>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
         }
     </script>
 </body>
