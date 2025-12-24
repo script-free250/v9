@@ -8,9 +8,11 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body style="overflow: hidden;"> <div class="app-loader" id="appLoader">
-        <img src="11zon_cropped.png" style="width: 100px; margin-bottom: 20px; filter: drop-shadow(0 0 10px #0f0);">
-        <div style="color: #0f0; font-family: 'Fira Code'; font-size: 1.2rem;">LOADING MODULES...</div>
+        <div class="radar-circle">
+            <img src="11zon_cropped.png" style="width: 60px; filter: drop-shadow(0 0 5px #0f0); animation: none;">
+        </div>
         <div class="scan-line"></div>
+        <div class="loader-status" id="loaderText">CONNECTING TO <span>SERVER</span>...</div>
     </div>
     <div class="live-counter" id="liveCounter" style="top:10px; right:10px;">Live: ...</div>
 
@@ -44,12 +46,23 @@
 
         if (!localStorage.getItem('isLoggedIn')) window.location.href = 'index'; 
 
-        // تشغيل انترو التطبيق
+        // تشغيل انترو التطبيق (نصوص متغيرة)
         window.onload = () => {
+            const texts = ["ESTABLISHING CONNECTION...", "DECRYPTING DATA...", "ACCESS GRANTED"];
+            let i = 0;
+            const textInterval = setInterval(() => {
+                if(i < texts.length) {
+                    document.getElementById('loaderText').innerText = texts[i];
+                    i++;
+                } else {
+                    clearInterval(textInterval);
+                }
+            }, 600);
+
             setTimeout(() => {
                 document.getElementById('appLoader').classList.add('slide-up');
                 document.body.style.overflow = 'auto'; // إعادة التمرير
-            }, 2000); // مدة الانترو 2 ثانية
+            }, 2500); 
         };
 
         setInterval(() => {
@@ -87,7 +100,7 @@
                 }
 
             } catch (err) {
-                console.error("Connection Error, falling back to random", err);
+                console.error("Connection Error", err);
                 finalNumber = (Math.random() * 29 + 1).toFixed(2);
             }
 
