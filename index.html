@@ -9,8 +9,8 @@
 <body style="display:none;" id="bodyContent">
 
     <div id="introScreen" class="intro-screen">
-        <img src="11zon_cropped.png" alt="Logo" class="intro-logo">
-        <div class="intro-text">جاري تهيئة النظام...</div>
+        <img src="11zon_cropped.png" alt="Logo" class="intro-logo" id="movingLogo">
+        <div class="intro-text" id="introText">جاري تهيئة النظام...</div>
     </div>
 
     <div class="live-counter" id="liveCounter">المتصلين: ...</div>
@@ -30,7 +30,7 @@
     </div>
 
     <div class="container" id="mainContainer" style="display: none;">
-        <img src="11zon_cropped.png" alt="App Logo" class="pro-logo">
+        <img src="11zon_cropped.png" alt="App Logo" class="pro-logo" id="targetLogo" style="opacity: 0;">
         
         <h2>بوابة السيرفر الآمنة</h2>
         <p style="color: #888; margin-bottom: 20px;">>> أدخل الكود للدخول...</p>
@@ -77,13 +77,53 @@
         function playIntro() {
             document.body.style.display = 'grid'; 
             
+            // 1. الانتظار قليلاً لظهور الانترو
             setTimeout(() => {
-                const intro = document.getElementById('introScreen');
-                const main = document.getElementById('mainContainer');
-                intro.classList.add('fade-out');
-                main.style.display = 'block'; 
-                setTimeout(() => { intro.remove(); }, 1000);
-            }, 3000);
+                const introScreen = document.getElementById('introScreen');
+                const introText = document.getElementById('introText');
+                const movingLogo = document.getElementById('movingLogo');
+                const targetLogo = document.getElementById('targetLogo');
+                const mainContainer = document.getElementById('mainContainer');
+
+                // إخفاء النص فقط
+                introText.style.opacity = 0;
+
+                // 2. إظهار الكونتينر (لكن اللوجو بداخله مخفي opacity:0)
+                // والهدف هو حساب مكانه
+                mainContainer.style.display = 'block';
+
+                // جعل خلفية الانترو شفافة لرؤية الكونتينر تحتها
+                introScreen.classList.add('bg-transparent');
+
+                // 3. حساب الإحداثيات للانتقال (FLIP Animation)
+                // نستخدم setTimeout صغير لضمان أن الكونتينر ظهر وتم حساب ابعاده
+                setTimeout(() => {
+                    const startRect = movingLogo.getBoundingClientRect();
+                    const endRect = targetLogo.getBoundingClientRect();
+
+                    const deltaX = endRect.left - startRect.left;
+                    const deltaY = endRect.top - startRect.top;
+                    const scale = endRect.width / startRect.width;
+
+                    // تطبيق الحركة
+                    movingLogo.style.transition = 'transform 1s cubic-bezier(0.68, -0.55, 0.27, 1.55)'; // تأثير مطاطي جميل
+                    movingLogo.style.transform = `translate(${deltaX}px, ${deltaY}px) scale(${scale})`;
+
+                    // 4. عند انتهاء الحركة، نبدل اللوجوهات
+                    setTimeout(() => {
+                        movingLogo.style.opacity = 0; // اخفاء اللوجو المتحرك
+                        targetLogo.style.opacity = 1; // إظهار اللوجو الثابت
+                        
+                        // تفعيل انميشن الطفو على اللوجو الثابت الآن
+                        targetLogo.classList.add('floating-logo');
+
+                        // تنظيف الانترو
+                        setTimeout(() => { introScreen.remove(); }, 500);
+                    }, 1000); // نفس مدة الـ transition
+
+                }, 100);
+
+            }, 2500); // مدة عرض اللوجو في المنتصف قبل الحركة
         }
 
         async function checkBan() {
