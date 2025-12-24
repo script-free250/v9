@@ -32,16 +32,16 @@
     <div class="container" id="mainContainer" style="display: none;">
         <img src="11zon_cropped.png" alt="App Logo" class="pro-logo">
         
-        <h2>نظام الوصول المؤمن</h2>
-        <p style="color: #888; margin-bottom: 20px;">>> أدخل مفتاح الوصول للمتابعة...</p>
+        <h2>بوابة السيرفر الآمنة</h2>
+        <p style="color: #888; margin-bottom: 20px;">>> أدخل الكود للدخول...</p>
         
         <div class="input-wrapper">
-            <input type="text" id="accessCode" placeholder="XX-XXXX-XX" 
-                   style="text-align: center; font-weight: bold; font-family:'Fira Code'; letter-spacing:2px;">
+            <input type="text" id="accessCode" placeholder="أدخل الكود هنا" 
+                   style="text-align: center; font-weight: bold; font-family:'Fira Code'; letter-spacing:0px;">
         </div>
 
         <button id="loginBtn">بدء الاتصال</button>
-        <button class="secondary-btn" onclick="window.location.href='create'" style="width:100%;">طلب مفتاح جديد</button>
+        <button class="secondary-btn" onclick="window.location.href='create'" style="width:100%;">إنشاء كود جديد</button>
         <p id="vpnWarning" style="color: var(--warning-orange); font-size: 0.8rem; margin-top: 10px; display: none;">⚠️ تحذير: تم اكتشاف اتصال VPN/Proxy</p>
     </div>
 
@@ -117,7 +117,7 @@
                 } else if (data.is_active === true) {
                     localStorage.setItem('isLoggedIn', 'true'); window.location.href = 'app';
                 } else {
-                    showModal("⏳ قيد الانتظار", "هذا الكود صحيح ولكنه بانتظار موافقة الأدمن.");
+                    showModal("جاري التفعيل", "جاري مراجعة بياناتك وإضافة حسابك في السيرفر يرجى الانتظار");
                 }
             } catch (err) { showModal("⚠️ خطأ", "فشل الاتصال."); shakeScreen(); } 
             finally { btn.innerText = "بدء الاتصال"; btn.disabled = false; }
