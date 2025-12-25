@@ -3,38 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SECURE GATEWAY | V9</title>
+    <title>بوابة الدخول الآمنة | V9</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        /* تنسيقات خاصة بشاشة التيرمينال */
-        .boot-screen {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #000; z-index: 9999;
-            padding: 20px; font-family: 'Fira Code', monospace;
-            color: var(--hacker-green); overflow: hidden;
-            display: flex; flex-direction: column; justify-content: flex-end;
-        }
-        .log-line { margin: 2px 0; font-size: 0.8rem; opacity: 0; animation: fadeInLog 0.1s forwards; }
-        @keyframes fadeInLog { to { opacity: 1; } }
-
-        /* شريط الحالة أسفل الشاشة */
-        .status-bar {
-            display: flex; justify-content: space-between;
-            font-size: 0.7rem; color: #666; margin-top: 20px;
-            border-top: 1px solid #333; padding-top: 10px; font-family: 'Fira Code';
-        }
-        .status-item { display: flex; align-items: center; gap: 5px; }
-        .blink-dot { width: 6px; height: 6px; background: var(--hacker-green); border-radius: 50%; animation: blink 1s infinite; }
-        
-        /* شريط الأخبار المتحرك */
-        .ticker-wrap {
-            position: fixed; bottom: 0; left: 0; width: 100%;
-            background: rgba(0, 20, 0, 0.9); border-top: 1px solid var(--hacker-green);
-            overflow: hidden; height: 30px; line-height: 30px; white-space: nowrap;
-            font-family: 'Fira Code'; font-size: 0.8rem; color: #fff; z-index: 100;
-        }
-        .ticker-move { display: inline-block; padding-left: 100%; animation: ticker 20s linear infinite; }
-        @keyframes ticker { 0% { transform: translate3d(0, 0, 0); } 100% { transform: translate3d(-100%, 0, 0); } }
+        /* تنسيقات إضافية للعربية */
+        .boot-screen { font-family: 'Courier New', monospace; direction: ltr; text-align: left; }
+        .ticker-wrap { font-family: 'Cairo', sans-serif; }
     </style>
 </head>
 <body style="display:none;" id="bodyContent">
@@ -45,15 +19,15 @@
 
     <div class="ticker-wrap">
         <div class="ticker-move">
-            <span style="color:var(--hacker-green);">[SYSTEM]</span> New Vulnerability Found in 1xBet API (Port 8080) ... 
-            <span style="color:gold;">[UPDATE]</span> Script V9.5 Released with Anti-Ban Protection ... 
-            <span style="color:var(--danger-red);">[ALERT]</span> High Traffic Detected on Server 4 ...
+            <span style="color:var(--hacker-green);">[نظام]</span> تم اكتشاف ثغرة جديدة في خوادم 1xBet (Port 8080) ... 
+            <span style="color:gold;">[تحديث]</span> إصدار السكربت V9.5 متاح الآن مع حماية ضد الحظر ... 
+            <span style="color:var(--danger-red);">[تنبيه]</span> ضغط عالي على السيرفر رقم 4 ... يرجى استخدام VPN في حالة بطء الاتصال ...
         </div>
     </div>
 
     <div id="loginModal" class="modal-overlay">
         <div class="modal-box">
-            <div class="modal-title" id="modalTitle">[ SYSTEM_ALERT ]</div>
+            <div class="modal-title" id="modalTitle">[ تنبيه النظام ]</div>
             <div class="modal-msg" id="modalMsg">...</div>
             <div class="modal-actions"><button class="modal-btn" onclick="closeModal()">موافق</button></div>
         </div>
@@ -63,24 +37,28 @@
         <img src="11zon_cropped.png" alt="App Logo" class="pro-logo" id="targetLogo" style="opacity: 0;">
         
         <div style="text-align: center; margin-bottom: 20px;">
-            <h2 style="margin: 0;">GATEWAY LOGIN</h2>
-            <div style="font-family: 'Fira Code'; font-size: 0.7rem; color: #888; margin-top: 5px;">ENCRYPTION: AES-256 | PROXY: <span style="color:var(--hacker-green)">ON</span></div>
+            <h2 style="margin: 0;">بوابة الدخول</h2>
+            <div style="font-family: 'Fira Code'; font-size: 0.7rem; color: #888; margin-top: 5px;">
+                التشفير: AES-256 | البروكسي: <span style="color:var(--hacker-green)">متصل</span>
+            </div>
         </div>
         
         <div class="input-wrapper">
-            <input type="text" id="accessCode" placeholder="ENTER ACCESS KEY" 
+            <input type="text" id="accessCode" placeholder="أدخل مفتاح الوصول (KEY)" 
                    style="text-align: center; font-weight: bold; font-family:'Fira Code'; letter-spacing:2px; text-transform:uppercase;">
         </div>
 
-        <button id="loginBtn">INITIALIZE CONNECTION</button>
-        <button class="secondary-btn" onclick="window.location.href='create.html'" style="width:100%;">REQUEST NEW ACCESS</button>
+        <button id="loginBtn">بدء الاتصال بالسيرفر</button>
+        <button class="secondary-btn" onclick="window.location.href='create.html'" style="width:100%;">طلب مفتاح جديد (تسجيل)</button>
         
         <div class="status-bar">
-            <div class="status-item"><div class="blink-dot"></div> SERVER: ONLINE</div>
-            <div class="status-item">LATENCY: <span id="pingVal">45ms</span></div>
+            <div class="status-item"><div class="blink-dot"></div> الحالة: متصل</div>
+            <div class="status-item">سرعة الاستجابة: <span id="pingVal">45ms</span></div>
         </div>
 
-        <p id="vpnWarning" style="color: var(--warning-orange); font-size: 0.8rem; margin-top: 10px; display: none; border: 1px dashed var(--warning-orange); padding: 5px;">⚠️ SECURITY ALERT: VPN TUNNEL DETECTED</p>
+        <p id="vpnWarning" style="color: var(--warning-orange); font-size: 0.8rem; margin-top: 10px; display: none; border: 1px dashed var(--warning-orange); padding: 5px;">
+            ⚠️ تحذير أمني: تم كشف اتصال VPN. يرجى الحذر.
+        </p>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -89,7 +67,6 @@
         const SUPABASE_KEY = 'sb_publishable_9xZcd3BkgL6cEQwHJitrew_mbX74lJW';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // تأثير الصوت
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         function playTone(freq, type='square', len=0.1) {
             if (audioCtx.state === 'suspended') audioCtx.resume();
@@ -112,19 +89,22 @@
             }
         }
 
-        // محاكاة Ping
         setInterval(() => {
             document.getElementById('pingVal').innerText = Math.floor(Math.random() * 60 + 20) + 'ms';
         }, 2000);
 
-        // نظام الإقلاع (Boot Sequence)
         async function runBootSequence() {
             document.body.style.display = 'block';
+            // تم تعريب السجلات لتبدو احترافية
             const logs = [
-                "Initializing Kernel...", "Loading Modules: NET, CRYPTO, FS...", 
-                "Connecting to Satellite Relay...", "Bypassing Regional Firewalls...",
-                "Fetching Encryption Keys...", "Verifying User Agent...", 
-                "Handshake Successful [200 OK]", "Starting Graphical Interface..."
+                "Initializing Kernel...", 
+                "تحميل وحدات النظام: NET, CRYPTO, FS...", 
+                "الاتصال بالأقمار الصناعية...", 
+                "تجاوز جدار الحماية (Firewall)...",
+                "جلب مفاتيح التشفير...", 
+                "التحقق من هوية الجهاز...", 
+                "تم الاتصال بنجاح [200 OK]", 
+                "تشغيل الواجهة الرسومية..."
             ];
             
             const term = document.getElementById('terminalLogs');
@@ -134,7 +114,7 @@
                 p.className = 'log-line';
                 p.innerHTML = `> ${logs[i]}`;
                 term.appendChild(p);
-                playTone(800, 'sine', 0.05); // صوت كتابة
+                playTone(800, 'sine', 0.05);
                 await new Promise(r => setTimeout(r, Math.random() * 300 + 100));
             }
 
@@ -148,7 +128,7 @@
                 setTimeout(() => {
                     container.classList.add('ui-visible');
                     document.getElementById('targetLogo').style.opacity = 1;
-                    playTone(600, 'sine', 0.5); // صوت بدء النظام
+                    playTone(600, 'sine', 0.5);
                 }, 50);
             }, 500);
         }
@@ -160,7 +140,7 @@
                 const data = await res.json();
                 const { data: banned } = await _supabase.from('banned_ips').select('*').eq('ip', data.ip);
                 if (banned && banned.length > 0) { 
-                    document.body.innerHTML = `<h1 style="color:red; text-align:center; margin-top:20%; font-family:'Fira Code';">🚫 CONNECTION REFUSED<br><span style="font-size:1rem;">IP BLACKLISTED</span></h1>`; 
+                    document.body.innerHTML = `<h1 style="color:red; text-align:center; margin-top:20%; font-family:'Fira Code';">🚫 تم رفض الاتصال<br><span style="font-size:1rem;">جهازك محظور من السيرفر</span></h1>`; 
                     document.body.style.display='block'; 
                 } else { 
                     runBootSequence(); 
@@ -172,24 +152,23 @@
         async function runLogin() {
             const codeInput = document.getElementById('accessCode').value.trim();
             const btn = document.getElementById('loginBtn');
-            if (!codeInput) { showModal("INPUT ERROR", "Please enter the access key."); shakeScreen(); return; }
+            if (!codeInput) { showModal("خطأ إدخال", "يرجى كتابة كود الوصول أولاً."); shakeScreen(); return; }
             
-            btn.innerText = "AUTHENTICATING..."; btn.disabled = true;
+            btn.innerText = "جاري التحقق..."; btn.disabled = true;
 
-            // محاكاة تأخير التحقق لزيادة الواقعية
             setTimeout(async () => {
                 try {
                     const { data } = await _supabase.from('active_codes').select('*').eq('code', codeInput).single();
                     if (!data) {
-                        showModal("ACCESS DENIED", "Invalid Access Key.");
+                        showModal("فشل الدخول", "مفتاح الوصول غير صحيح أو منتهي.");
                         shakeScreen();
                     } else if (data.is_active === true) {
                         localStorage.setItem('isLoggedIn', 'true'); window.location.href = 'app.html';
                     } else {
-                        showModal("PENDING APPROVAL", "Your key is currently under review by the administrator.");
+                        showModal("قيد الانتظار", "مفتاحك قيد المراجعة من قبل الإدارة. يرجى الانتظار.");
                     }
-                } catch (err) { showModal("NETWORK ERROR", "Connection to server failed."); shakeScreen(); } 
-                finally { btn.innerText = "INITIALIZE CONNECTION"; btn.disabled = false; }
+                } catch (err) { showModal("خطأ اتصال", "فشل الاتصال بقاعدة البيانات."); shakeScreen(); } 
+                finally { btn.innerText = "بدء الاتصال بالسيرفر"; btn.disabled = false; }
             }, 1500);
         }
         document.getElementById('loginBtn').addEventListener('click', runLogin);
