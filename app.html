@@ -49,6 +49,7 @@
             text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
             position: relative;
             z-index: 1;
+            min-height: 70px; /* لمنع اهتزاز الصفحة عند تغيير الرقم */
         }
 
         /* زر التبديل للتفاحة */
@@ -141,13 +142,20 @@
         const bar = document.getElementById('progressFill');
         const INTERVAL = 7000; // مدة الجولة
         let start = Date.now();
+        let scrambleInterval = null;
 
         // دالة توليد الأرقام الخاصة بـ Crash
         async function gen() {
-            // تأثير التشويش قبل ظهور الرقم
-            display.style.textShadow = "0 0 5px red";
-            display.style.color = "#aaa";
-            display.innerText = "CALC..";
+            // 1. بدء تأثير "الأرقام السريعة" (Matrix Effect) بدلاً من النص الثابت
+            // هذا يلغي الشعور باللاج لأن الأرقام تتحرك بسرعة أثناء التحميل
+            if (scrambleInterval) clearInterval(scrambleInterval);
+            display.style.color = "#aaa"; // لون باهت أثناء الحساب
+            display.style.textShadow = "none";
+            
+            scrambleInterval = setInterval(() => {
+                // توليد أرقام عشوائية سريعة لإيهام المستخدم بالمعالجة
+                display.innerText = (Math.random() * 10 + 1).toFixed(2) + "x";
+            }, 50); // كل 50 مللي ثانية
 
             let finalNumber = "1.00";
 
@@ -171,11 +179,10 @@
                     }
                 } else {
                     // === الوضع العشوائي للكراش ===
-                    // المنطق: أغلب الأوقات أرقام صغيرة، وأحياناً أرقام كبيرة
                     const r = Math.random();
-                    if(r < 0.3) finalNumber = (1.00 + Math.random() * 0.50).toFixed(2); // خسارة سريعة
-                    else if (r < 0.7) finalNumber = (1.50 + Math.random() * 2.00).toFixed(2); // ربح متوسط
-                    else finalNumber = (3.50 + Math.random() * 10.00).toFixed(2); // ربح عالي
+                    if(r < 0.3) finalNumber = (1.00 + Math.random() * 0.50).toFixed(2);
+                    else if (r < 0.7) finalNumber = (1.50 + Math.random() * 2.00).toFixed(2);
+                    else finalNumber = (3.50 + Math.random() * 10.00).toFixed(2);
                 }
 
             } catch (err) {
@@ -183,15 +190,14 @@
                 finalNumber = (Math.random() * 5 + 1).toFixed(2);
             }
 
-            // عرض الرقم النهائي
+            // عرض الرقم النهائي بعد تأخير بسيط لإعطاء وقت لتأثير الأرقام
             setTimeout(() => { 
+                clearInterval(scrambleInterval); // إيقاف العشوائية
+                
                 display.style.textShadow = "0 0 20px rgba(255, 255, 255, 0.8)";
                 display.style.color = "#fff";
                 display.innerText = finalNumber + "x";
-                
-                // تشغيل صوت بسيط عند ظهور النتيجة (اختياري)
-                // playSound(); 
-            }, 300);
+            }, 500); // يستمر تأثير التشويش لمدة نصف ثانية
 
             start = Date.now();
         }
