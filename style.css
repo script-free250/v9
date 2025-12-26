@@ -1,4 +1,4 @@
-/* style.css - النسخة النهائية (تضمين أنميشن اللوجو الاحترافي + إصلاحات Grid + صفحة 404) */
+/* style.css - النسخة المحسنة (Performance Optimized + Lag Free) */
 @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&display=swap');
 
@@ -21,31 +21,53 @@ body {
     background-color: var(--bg-color);
     color: var(--text-color);
     
-    /* نظام المحاذاة Grid لضمان التوسط التام */
+    /* استخدام Grid للمحاذاة */
     display: grid;
     place-items: center;
     align-content: center;
     
     min-height: 100vh; direction: rtl;
     overflow-x: hidden; position: relative;
-    
+}
+
+/* === تحسين الخلفية المتحركة لمنع اللاج === */
+/* بدلاً من تحريك الـ body، نستخدم عنصر ثابت معزول */
+body::after {
+    content: "";
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    z-index: -2; /* خلف كل شيء */
     background-image: linear-gradient(0deg, transparent 24%, var(--hacker-dim) 25%, var(--hacker-dim) 26%, transparent 27%, transparent 74%, var(--hacker-dim) 75%, var(--hacker-dim) 76%, transparent 77%, transparent), 
                       linear-gradient(90deg, transparent 24%, var(--hacker-dim) 25%, var(--hacker-dim) 26%, transparent 27%, transparent 74%, var(--hacker-dim) 75%, var(--hacker-dim) 76%, transparent 77%, transparent);
     background-size: 40px 40px;
     animation: matrixMove 4s linear infinite;
+    will-change: background-position; /* أمر للمتصفح باستخدام كرت الشاشة */
+    opacity: 0.5;
 }
 
-@keyframes matrixMove { 0% { background-position: 0 0; } 100% { background-position: 40px 40px; } }
+@keyframes matrixMove { 
+    0% { background-position: 0 0; } 
+    100% { background-position: 40px 40px; } 
+}
+
+/* تأثير الماوس (تم نقله ليكون منفصلاً) */
+body::before {
+    content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(0, 255, 65, 0.08), transparent 25%);
+    pointer-events: none; z-index: -1;
+    will-change: background;
+}
 
 /* === تصميم اللوجو الاحترافي === */
 .pro-logo {
-    width: 130px; /* حجم مناسب */
+    width: 130px; 
     height: auto;
     display: block;
-    margin: 0 auto 15px auto; /* توسيط ومسافة من الأسفل */
+    margin: 0 auto 15px auto;
     filter: drop-shadow(0 0 5px var(--hacker-green));
     animation: logoFloat 4s ease-in-out infinite, hackerGlow 3s infinite alternate;
     transition: transform 0.3s;
+    will-change: transform, filter;
 }
 
 .pro-logo:hover {
@@ -53,13 +75,11 @@ body {
     filter: drop-shadow(0 0 15px var(--hacker-green));
 }
 
-/* حركة الطفو (Floating) */
 @keyframes logoFloat {
     0%, 100% { transform: translateY(0); }
     50% { transform: translateY(-10px); }
 }
 
-/* توهج النيون المتنفس (Breathing Glow) */
 @keyframes hackerGlow {
     0% { filter: drop-shadow(0 0 2px var(--hacker-green)) brightness(1); }
     100% { filter: drop-shadow(0 0 12px var(--hacker-green)) brightness(1.2); }
@@ -80,60 +100,28 @@ body {
     100% { box-shadow: 0 0 0 0 rgba(0, 255, 65, 0); }
 }
 
-body::before {
-    content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(0, 255, 65, 0.08), transparent 25%);
-    pointer-events: none; z-index: 0;
-}
-
-/* === تنسيقات الانترو (شاشة الدخول) === */
-.intro-screen {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background-color: #000; z-index: 5000;
-    display: flex; flex-direction: column; justify-content: center; align-items: center;
-    transition: opacity 1s ease-out;
-}
-.intro-logo {
-    width: 180px; height: auto;
-    filter: drop-shadow(0 0 15px var(--hacker-green));
-    animation: logoPulse 2s infinite ease-in-out;
-    margin-bottom: 20px;
-}
-.intro-text {
-    font-family: 'Fira Code', monospace;
-    color: var(--hacker-green);
-    font-size: 1.2rem;
-    letter-spacing: 2px;
-    animation: blinkText 1s infinite;
-}
-@keyframes logoPulse {
-    0% { transform: scale(1); filter: drop-shadow(0 0 10px var(--hacker-green)); }
-    50% { transform: scale(1.1); filter: drop-shadow(0 0 25px var(--hacker-green)); }
-    100% { transform: scale(1); filter: drop-shadow(0 0 10px var(--hacker-green)); }
-}
-@keyframes blinkText { 50% { opacity: 0; } }
-.intro-screen.fade-out { opacity: 0; pointer-events: none; }
-
-
+/* === تنسيقات الحاويات === */
 .container {
     background: var(--glass-bg);
     padding: 2.5rem;
     border: 1px solid var(--border-color);
-    box-shadow: 0 0 40px rgba(0, 255, 65, 0.15), inset 0 0 20px rgba(0, 255, 65, 0.05);
+    box-shadow: 0 0 40px rgba(0, 255, 65, 0.15);
     border-radius: 16px;
     width: 95%; max-width: 480px;
     margin: 20px auto; 
     text-align: center; position: relative;
-    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    /* تحسين الأداء بتقليل البلور للأجهزة الضعيفة */
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
     animation: fadeIn 0.8s cubic-bezier(0.22, 1, 0.36, 1); z-index: 1;
 }
 
 .container.wide-mode { max-width: 900px; }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
+/* العداد الحي */
 .live-counter {
     position: fixed; top: 20px; right: 20px;
-    background: rgba(0,0,0,0.7); border: 1px solid var(--hacker-green);
+    background: rgba(0,0,0,0.8); border: 1px solid var(--hacker-green);
     padding: 6px 16px; border-radius: 20px; color: var(--hacker-green);
     font-family: 'Fira Code'; font-size: 0.85rem; z-index: 1000;
     box-shadow: 0 0 10px rgba(0,255,65,0.2);
@@ -141,42 +129,42 @@ body::before {
 .live-counter::before { content: "●"; color: #ff3333; margin-left: 6px; animation: blink 1s infinite; }
 @keyframes blink { 50% { opacity: 0; } }
 
-.telegram-float {
-    position: fixed; bottom: 25px; right: 25px;
-    background: #24A1DE; color: white;
-    width: 55px; height: 55px; border-radius: 50%;
-    display: flex; justify-content: center; align-items: center;
-    box-shadow: 0 0 20px rgba(36, 161, 222, 0.5);
-    transition: 0.3s; z-index: 1000; border: 2px solid rgba(255,255,255,0.1);
-}
-.telegram-float:hover { transform: scale(1.1) translateY(-5px); box-shadow: 0 0 35px #24A1DE; }
-.telegram-float svg { width: 28px; height: 28px; fill: #fff; }
-
+/* عناصر الإدخال والأزرار */
 .input-wrapper { 
-    position: relative; 
-    width: 100%; 
-    margin-bottom: 25px;
-    display: flex;
-    justify-content: center;
+    position: relative; width: 100%; margin-bottom: 25px;
+    display: flex; justify-content: center;
 }
 
 textarea, input {
     width: 100%; background: rgba(0,0,0,0.5); border: 1px solid #333; 
     padding: 16px; color: #fff; font-family: 'Cairo'; font-size: 1rem; 
     outline: none; transition: 0.3s; border-radius: 8px;
-    box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);
 }
 textarea:focus, input:focus { 
     border-color: var(--hacker-green); 
-    box-shadow: 0 0 15px rgba(0, 255, 65, 0.2), inset 0 2px 5px rgba(0,0,0,0.5);
-    background: rgba(0, 20, 10, 0.8);
+    box-shadow: 0 0 15px rgba(0, 255, 65, 0.2);
+    background: rgba(0, 20, 10, 0.9);
 }
 
+button { 
+    width: 100%; padding: 16px; margin-top: 25px; border: none; 
+    background: linear-gradient(135deg, #004d00, #009900);
+    color: #fff; font-weight: 900; font-size: 1.1rem; cursor: pointer; 
+    transition: 0.3s; text-transform: uppercase; letter-spacing: 1px; 
+    border-radius: 50px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); 
+    position: relative; overflow: hidden;
+}
+button:hover { background: linear-gradient(135deg, #006600, #00cc00); transform: translateY(-2px); box-shadow: 0 10px 25px rgba(0, 255, 65, 0.4); }
+
+.secondary-btn { background: transparent; border: 1px solid #444; color: #999; margin-top: 10px; border-radius: 50px; animation: none !important; }
+.secondary-btn:hover { background: rgba(255,255,255,0.05); border-color: var(--hacker-green); color: var(--hacker-green); transform: none; box-shadow: none; }
+
+/* Modal & Popups */
 .modal-overlay {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     background: rgba(0,0,0,0.9); z-index: 4000;
     display: flex; justify-content: center; align-items: center;
-    opacity: 0; visibility: hidden; transition: 0.3s; backdrop-filter: blur(8px);
+    opacity: 0; visibility: hidden; transition: 0.3s; backdrop-filter: blur(5px);
 }
 .modal-overlay.active { opacity: 1; visibility: visible; }
 .modal-box {
@@ -192,180 +180,15 @@ textarea:focus, input:focus {
 .modal-actions { display: flex; gap: 10px; justify-content: center; }
 .modal-btn { padding: 10px 25px; border: 1px solid var(--hacker-green); background: transparent; color: var(--hacker-green); cursor: pointer; transition: 0.2s; flex: 1; border-radius: 6px; }
 .modal-btn:hover { background: var(--hacker-green); color: #000; font-weight: bold; }
-.modal-btn.cancel { border-color: var(--danger-red); color: var(--danger-red); }
-.modal-btn.cancel:hover { background: var(--danger-red); color: #fff; }
 
+/* النصوص */
 h2 { color: var(--hacker-green); margin-bottom: 20px; font-weight: 900; text-transform: uppercase; text-shadow: 0 0 20px rgba(0, 255, 65, 0.6); letter-spacing: 1.5px; }
-label.title { display: block; text-align: right; margin: 20px 0 10px; color: var(--hacker-green); font-size: 1rem; font-weight: bold; }
 
-.program-grid { display: flex; justify-content: center; gap: 15px; margin-bottom: 25px; flex-wrap: wrap; }
-.program-option { border: 1px solid #444; background: rgba(20,20,20,0.6); padding: 5px; border-radius: 10px; cursor: pointer; transition: all 0.3s; width: 150px; height: 90px; position: relative; overflow: hidden; display: flex; justify-content: center; align-items: center; }
-.program-option:hover { transform: translateY(-5px); border-color: #fff; box-shadow: 0 10px 25px rgba(0,0,0,0.6); }
-.program-option.selected { border-color: var(--hacker-green); box-shadow: 0 0 20px rgba(0, 255, 65, 0.4); background: rgba(0, 255, 65, 0.05); }
-.program-option.selected::after { content: "✔"; position: absolute; top: -8px; right: -8px; background: var(--hacker-green); color: #000; width: 25px; height: 25px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; z-index: 10; box-shadow: 0 0 10px var(--hacker-green); }
-.program-icon { width: 100%; height: 100%; object-fit: contain; filter: grayscale(100%) brightness(0.7); transition: 0.4s; }
-.program-option:hover .program-icon, .program-option.selected .program-icon { filter: grayscale(0%) brightness(1.2); transform: scale(1.05); }
-
-.upload-box { border: 2px dashed #444; background: rgba(20, 20, 20, 0.4); padding: 20px; cursor: pointer; color: #888; margin-bottom: 10px; display: flex; justify-content: center; align-items: center; transition: 0.3s; border-radius: 10px; height: 150px; position: relative; overflow: hidden; }
-.upload-box:hover { border-color: var(--hacker-green); color: var(--hacker-green); background: rgba(0, 255, 65, 0.05); }
-.upload-box.uploaded { border-style: solid; border-color: var(--hacker-green); color: #fff; background: rgba(0, 255, 65, 0.1); }
-.preview-img { max-width: 100%; max-height: 100%; display: none; position: absolute; inset: 0; margin: auto; object-fit: contain; z-index: 2; }
-
-button { 
-    width: 100%; padding: 16px; margin-top: 25px; border: none; 
-    background: linear-gradient(135deg, #004d00, #009900);
-    color: #fff; font-weight: 900; font-size: 1.1rem; cursor: pointer; 
-    transition: 0.3s; text-transform: uppercase; letter-spacing: 1px; 
-    border-radius: 50px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); 
-    position: relative; overflow: hidden;
-}
-button:not(.secondary-btn):not(.action-btn):not(.modal-btn):not(.filter-btn):not(.paste-btn):not(.manual-btn):not(.error-btn) { animation: pulse-green 3s infinite; }
-button:hover { background: linear-gradient(135deg, #006600, #00cc00); transform: translateY(-2px); box-shadow: 0 10px 25px rgba(0, 255, 65, 0.4); }
-
-.copy-btn { background: #111; color: var(--hacker-green); border: 1px solid var(--hacker-green); padding: 5px 15px; width: auto; display: inline-block; border-radius: 6px; margin-top: 10px; }
-.secondary-btn { background: transparent; border: 1px solid #444; color: #999; margin-top: 10px; border-radius: 50px; }
-.secondary-btn:hover { background: rgba(255,255,255,0.05); border-color: var(--hacker-green); color: var(--hacker-green); transform: none; box-shadow: none; }
-
-.stats-grid { display: flex; gap: 15px; margin-bottom: 25px; }
-.stat-card { flex: 1; background: rgba(10,10,10,0.6); border: 1px solid #333; padding: 15px; border-radius: 10px; position: relative; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
-.stat-card::before { content:""; position: absolute; top:0; left:0; width:3px; height:100%; background: var(--hacker-green); box-shadow: 0 0 10px var(--hacker-green); }
-.stat-number { font-family: 'Fira Code'; font-size: 2rem; font-weight: bold; color: #fff; display: block; margin-bottom: 5px; }
-.stat-label { font-size: 0.8rem; color: #888; text-transform: uppercase; letter-spacing: 1px; }
-
-.action-btn { padding: 6px 14px; font-size: 0.85rem; margin-top: 10px; width: auto; display: inline-block; cursor: pointer; background: transparent; border: 1px solid #555; color: #aaa; border-radius: 4px; margin-left: 5px; transition: 0.2s; }
-.delete-btn:hover { border-color: var(--warning-orange); background: var(--warning-orange); color: #000; }
-.ban-btn:hover { border-color: var(--danger-red); background: var(--danger-red); color: #fff; box-shadow: 0 0 15px var(--danger-red); }
-.activate-btn:hover { border-color: #0f0; background: #0f0; color: #000; box-shadow: 0 0 15px #0f0; }
-
+/* Loading Spinner */
 .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 2000; display: flex; flex-direction: column; justify-content: center; align-items: center; visibility: hidden; opacity: 0; transition: 0.3s; }
 .loading-overlay.active { visibility: visible; opacity: 1; }
-.spinner { width: 60px; height: 60px; border: 4px solid #333; border-top: 4px solid var(--hacker-green); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; box-shadow: 0 0 20px rgba(0, 255, 65, 0.2); }
+.spinner { width: 60px; height: 60px; border: 4px solid #333; border-top: 4px solid var(--hacker-green); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-.loading-text { font-family: 'Fira Code'; color: var(--hacker-green); font-size: 1.2rem; text-shadow: 0 0 10px var(--hacker-green); }
-.hidden { display: none; } input[type="file"] { display: none; }
 
-.admin-controls { display: flex; gap: 10px; margin-bottom: 15px; }
-.search-input { flex: 2; border-radius: 8px; border: 1px solid #444; }
-.filter-btn { flex: 1; padding: 10px; background: #111; border: 1px solid #444; color: #fff; border-radius: 8px; margin: 0; transition: 0.3s; }
-.filter-btn.active { background: var(--hacker-green); color: #000; font-weight: bold; box-shadow: 0 0 15px rgba(0,255,65,0.3); border-color: var(--hacker-green); }
-
-.manual-add-box { 
-    background: #0a0a0a; 
-    border: 1px dashed var(--hacker-green); 
-    padding: 20px; 
-    margin-bottom: 30px; 
-    border-radius: 8px; 
-    text-align: right;
-}
-.manual-row { display: flex; gap: 10px; align-items: center; margin-top: 10px; }
-.manual-btn { 
-    margin: 0; 
-    flex: 1; 
-    padding: 16px; 
-    background: #222; 
-    border: 1px solid var(--hacker-green); 
-    color: var(--hacker-green);
-    animation: none;
-}
-.manual-btn:hover { background: var(--hacker-green); color: #000; }
-
-/* ==========================================================
-   404 ERROR PAGE STYLES - تنسيقات صفحة الخطأ
-   ========================================================== */
-
-.error-container {
-    border-color: var(--danger-red);
-    box-shadow: 0 0 40px rgba(255, 42, 42, 0.15), inset 0 0 20px rgba(255, 42, 42, 0.05);
-}
-
-.error-logo {
-    filter: drop-shadow(0 0 5px var(--danger-red)) grayscale(100%);
-    animation: shake 2s infinite, hackerGlowRed 3s infinite alternate;
-}
-
-@keyframes hackerGlowRed {
-    0% { filter: drop-shadow(0 0 2px var(--danger-red)) grayscale(100%); }
-    100% { filter: drop-shadow(0 0 12px var(--danger-red)) grayscale(0%); }
-}
-
-.glitch-text {
-    font-size: 6rem;
-    font-weight: 900;
-    color: #fff;
-    position: relative;
-    margin: 0;
-    font-family: 'Fira Code', monospace;
-    letter-spacing: -5px;
-}
-
-.glitch-text::before,
-.glitch-text::after {
-    content: attr(data-text);
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: var(--bg-color);
-}
-
-.glitch-text::before {
-    left: 2px;
-    text-shadow: -1px 0 red;
-    clip: rect(24px, 550px, 90px, 0);
-    animation: glitch-anim 3s infinite linear alternate-reverse;
-}
-
-.glitch-text::after {
-    left: -2px;
-    text-shadow: -1px 0 blue;
-    clip: rect(85px, 550px, 140px, 0);
-    animation: glitch-anim 2.5s infinite linear alternate-reverse;
-}
-
-@keyframes glitch-anim {
-    0% { clip: rect(4px, 9999px, 86px, 0); transform: skew(0.55deg); }
-    5% { clip: rect(61px, 9999px, 47px, 0); transform: skew(0.24deg); }
-    10% { clip: rect(96px, 9999px, 19px, 0); transform: skew(0.78deg); }
-    15% { clip: rect(69px, 9999px, 78px, 0); transform: skew(0.5deg); }
-    20% { clip: rect(93px, 9999px, 74px, 0); transform: skew(0.66deg); }
-    25% { clip: rect(42px, 9999px, 7px, 0); transform: skew(0.4deg); }
-    30% { clip: rect(38px, 9999px, 2px, 0); transform: skew(0.81deg); }
-    35% { clip: rect(31px, 9999px, 60px, 0); transform: skew(0.32deg); }
-    40% { clip: rect(10px, 9999px, 9px, 0); transform: skew(0.35deg); }
-    45% { clip: rect(42px, 9999px, 69px, 0); transform: skew(0.85deg); }
-    50% { clip: rect(79px, 9999px, 21px, 0); transform: skew(0.37deg); }
-    55% { clip: rect(13px, 9999px, 18px, 0); transform: skew(0.18deg); }
-    60% { clip: rect(72px, 9999px, 99px, 0); transform: skew(0.2deg); }
-    65% { clip: rect(39px, 9999px, 12px, 0); transform: skew(0.19deg); }
-    70% { clip: rect(2px, 9999px, 39px, 0); transform: skew(0.25deg); }
-    75% { clip: rect(76px, 9999px, 48px, 0); transform: skew(0.78deg); }
-    80% { clip: rect(2px, 9999px, 3px, 0); transform: skew(0.6deg); }
-    85% { clip: rect(92px, 9999px, 3px, 0); transform: skew(0.64deg); }
-    90% { clip: rect(17px, 9999px, 7px, 0); transform: skew(0.19deg); }
-    95% { clip: rect(83px, 9999px, 40px, 0); transform: skew(0.59deg); }
-    100% { clip: rect(96px, 9999px, 98px, 0); transform: skew(0.19deg); }
-}
-
-.error-msg-box {
-    margin: 20px 0;
-    padding: 15px;
-    background: rgba(255, 42, 42, 0.05);
-    border: 1px dashed var(--danger-red);
-    border-radius: 8px;
-}
-
-.error-btn {
-    background: transparent;
-    border: 1px solid var(--danger-red);
-    color: var(--danger-red);
-    box-shadow: none;
-    animation: none;
-}
-
-.error-btn:hover {
-    background: var(--danger-red);
-    color: #fff;
-    box-shadow: 0 0 20px var(--danger-red);
-    transform: translateY(-2px);
-}
+/* Utility */
+.hidden { display: none; }
