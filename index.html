@@ -7,12 +7,12 @@
     <link rel="stylesheet" href="style.css">
     <style>
         /* =========================================
-           تنسيقات شاشة الإقلاع (Plane Theme)
+           تنسيقات شاشة الإقلاع الجديدة (Loading Theme)
         ========================================= */
         .loader-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: #050505;
+            background: #050505; /* خلفية داكنة جداً */
             z-index: 9999;
             display: flex;
             flex-direction: column;
@@ -56,15 +56,14 @@
             transition: width 0.1s linear;
         }
 
-        /* أيقونة الطائرة (Plane) */
-        .plane-head {
+        /* أيقونة الصاروخ (تتحرك مع الشريط) */
+        .rocket-head {
             position: absolute;
             top: 50%;
             left: 100%; /* تتبع نهاية الشريط */
-            /* تدوير الطائرة قليلاً للأعلى لتبدو وكأنها تقلع */
-            transform: translate(-50%, -55%) rotate(-10deg); 
-            font-size: 1.8rem;
-            filter: drop-shadow(0 0 8px var(--hacker-green));
+            transform: translate(-50%, -50%) rotate(-45deg); /* تدوير الصاروخ لليمين */
+            font-size: 1.5rem;
+            filter: drop-shadow(0 0 5px var(--hacker-green));
             transition: left 0.1s linear;
         }
 
@@ -74,7 +73,7 @@
             color: #888;
             font-size: 0.9rem;
             letter-spacing: 0.5px;
-            min-height: 20px;
+            min-height: 20px; /* لمنع اهتزاز العناصر */
         }
 
         /* =========================================
